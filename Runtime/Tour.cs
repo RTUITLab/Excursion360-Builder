@@ -1,4 +1,5 @@
-﻿using Excursion360_Builder.Runtime.Markers;
+﻿using System;
+using Excursion360_Builder.Runtime.Markers;
 using Excursion360_Builder.Shared.States.Items.Field;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Video;
+using Object = UnityEngine.Object;
 
 /**
  * @brief Main object
@@ -32,11 +34,28 @@ public class Tour : MonoBehaviour
     public FieldItemMarker baseFieldItemGameObject;
 
     public Texture defaultTexture;
-    public Texture logoTexture;
+    [Tooltip("Use SVG icon")]
+    public DefaultAsset logoTexture;
 
+    private void OnValidate()
+    {
+        if (!logoTexture)
+        {
+            return;
+        }
 
-    public VideoPlayerPool videoPlayerPool 
-    { 
+        var path = AssetDatabase.GetAssetPath(logoTexture);
+        if (System.IO.Path.GetExtension(path) == ".svg")
+        {
+            return;
+        }
+
+        EditorUtility.DisplayDialog("Incorrect logo", "You must use svg icon", "Ok");
+        logoTexture = default;
+    }
+
+    public VideoPlayerPool videoPlayerPool
+    {
         get
         {
             if (_videoPlayerPool == null)
@@ -54,7 +73,8 @@ public class Tour : MonoBehaviour
      * @brief Transition speed in seconds
      */
     public float transitionSpeed = 2.0f;
-    public ColorScheme[] colorSchemes = new ColorScheme[] { new ColorScheme { color = Color.red, name = "default" } };
+
+    public ColorScheme[] colorSchemes = new ColorScheme[] {new ColorScheme {color = Color.red, name = "default"}};
 
     private State _currentState = null;
     private TextureSource _currentTextureSource = null;
@@ -95,7 +115,8 @@ public class Tour : MonoBehaviour
         {
             _transition += Time.deltaTime;
 
-            if (_transition >= 1.0f) {
+            if (_transition >= 1.0f)
+            {
                 _currentTextureSource.InUse = false;
                 _currentState = _nextState;
                 _currentTextureSource = _nextTextureSource;
@@ -115,7 +136,6 @@ public class Tour : MonoBehaviour
             return;
 
 
-
         ClearConnections();
 
         _nextState = nextState;
@@ -127,7 +147,7 @@ public class Tour : MonoBehaviour
     public void SpawnConnections()
     {
         var connections = _currentState.GetComponents<Connection>();
-        
+
         foreach (var connection in connections)
         {
             ConnectionMarker marker = Instantiate(connectionMarkerPrefab, transform);
@@ -168,11 +188,12 @@ public class Tour : MonoBehaviour
             };
             var tris = new int[]
             {
-                0,1,2,
-                0,2,3
+                0, 1, 2,
+                0, 2, 3
             };
             MeshRenderer meshRenderer = fieldItemMarker.gameObject.AddComponent<MeshRenderer>();
-            var mat = AssetDatabase.LoadAssetAtPath<Material>("Packages/com.rexagon.tour-creator/Materials/FieldItem.mat");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(
+                "Packages/com.rexagon.tour-creator/Materials/FieldItem.mat");
             meshRenderer.sharedMaterial = mat;
             MeshFilter meshFilter = fieldItemMarker.gameObject.AddComponent<MeshFilter>();
             Mesh mesh = new Mesh
@@ -183,7 +204,6 @@ public class Tour : MonoBehaviour
             meshFilter.mesh = mesh;
             fieldItemMarker.gameObject.AddComponent<MeshCollider>();
         }
-
     }
 
     public void ClearConnections()
@@ -192,6 +212,7 @@ public class Tour : MonoBehaviour
         {
             Destroy(marker.gameObject);
         }
+
         _markers.Clear();
     }
 
@@ -240,6 +261,7 @@ public class Tour : MonoBehaviour
             if (connection.Destination)
                 StartCoroutine(connection.Destination.GetComponent<TextureSource>().LoadTexture());
         }
+
         return textureSource;
     }
 }

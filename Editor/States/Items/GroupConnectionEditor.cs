@@ -127,7 +127,18 @@ class GroupConnectionEditor : EditorBase
                     break;
                 }
                 EditorGUILayout.EndHorizontal();
+                
             }
+            EditorGUILayout.BeginHorizontal();
+            groupConnection.minimizeWidth = EditorGUILayout.Slider(
+                "minimize width",
+                groupConnection.minimizeWidth,
+                1, 5);
+            groupConnection.minimizeHeight = EditorGUILayout.Slider(
+                "minimize height",
+                groupConnection.minimizeHeight,
+                1, 5);
+            EditorGUILayout.EndHorizontal();
             EditorGUI.indentLevel--;
             EditorGUI.indentLevel--;
         }

@@ -12,7 +12,8 @@ public class GroupConnection : MonoBehaviourStateItem
     public string title;
     public List<State> states = new List<State>();
     public List<string> infos = new List<string>();
-
+    public float minimizeWidth;
+    public float minimizeHeight;
     public List<StateRotationAfterStepAnglePair> rotationAfterStepAngles = new List<StateRotationAfterStepAnglePair>();
 }
 

@@ -13,6 +13,8 @@ namespace Packages.tour_creator.Editor.Protocol
         public List<string> stateIds;
         public List<string> infos;
         public List<GroupStateLinkRotationOverride> groupStateRotationOverrides;
+        public float minimizeWidth;
+        public float minimizeHeight;
     }
 
     [Serializable]

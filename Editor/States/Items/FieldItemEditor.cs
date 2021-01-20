@@ -17,6 +17,7 @@ namespace Excursion360_Builder.Editor.States.Items
             {
                 Undo.AddComponent<FieldItem>(state.gameObject);
             }
+
             EditorGUILayout.Space();
 
             var fieldItems = state.GetComponents<FieldItem>();
@@ -37,11 +38,11 @@ namespace Excursion360_Builder.Editor.States.Items
                 {
                     var vertex = fieldItem.vertices[i];
                     var buttonStyle = Styles.ToggleButtonStyleNormal;
-                    if (StateItemPlaceEditor.EditableItem == (object)vertex)
+                    if (StateItemPlaceEditor.EditableItem == (object) vertex)
                         buttonStyle = Styles.ToggleButtonStyleToggled;
                     if (GUILayout.Button(vertex.index.ToString(), buttonStyle))
                     {
-                        if (StateItemPlaceEditor.EditableItem == (object)vertex)
+                        if (StateItemPlaceEditor.EditableItem == (object) vertex)
                         {
                             StateItemPlaceEditor.CleadEditing();
                         }
@@ -50,15 +51,17 @@ namespace Excursion360_Builder.Editor.States.Items
                             StateItemPlaceEditor.EnableEditing(state, vertex, Color.green);
                         }
                     }
-
                 }
+
                 EditorGUILayout.EndHorizontal();
                 var previewTexture = fieldItem.texture;
                 if (previewTexture == null)
                 {
                     previewTexture = EditorGUIUtility.whiteTexture;
                 }
-                fieldItem.texture = EditorGUI.ObjectField(EditorGUILayout.GetControlRect(false, 150.0f), fieldItem.texture, typeof(Texture2D), false) as Texture;
+
+                fieldItem.texture = EditorGUI.ObjectField(EditorGUILayout.GetControlRect(false, 150.0f),
+                    fieldItem.texture, typeof(Texture2D), false) as Texture;
             }
         }
     }

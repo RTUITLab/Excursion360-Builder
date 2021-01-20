@@ -184,6 +184,8 @@ public class TourExporter
                 rotation = connection.Orientation,
                 stateIds = connection.states.Select(s => s.GetExportedId()).ToList(),
                 infos = connection.infos.ToList(),
+                minimizeWidth = connection.minimizeWidth,
+                minimizeHeight = connection.minimizeHeight,
                 groupStateRotationOverrides = connection
                     .rotationAfterStepAngles
                     .Select(p => new Exported.GroupStateLinkRotationOverride
@@ -211,7 +213,7 @@ public class TourExporter
     private static bool CopyLogo(string folderPath, out string logoPath)
     {
         logoPath = "";
-        string path = AssetDatabase.GetAssetPath(Tour.Instance.logoTexture);
+        var path = AssetDatabase.GetAssetPath(Tour.Instance.logoTexture);
         if (string.IsNullOrEmpty(path))
         {
             if (!EditorUtility.DisplayDialog("Warning", "There is no logo to navigate between locations. Are you sure you want to leave the default logo?", "Yes, continue", "Cancel"))
@@ -222,7 +224,7 @@ public class TourExporter
             logoPath = "";
             return true;
         }
-        string filename = "logo" + Path.GetExtension(path);
+        var filename = $"logo_{Tour.Instance.logoTexture.GetInstanceID()}{Path.GetExtension(path)}";
         Debug.Log(Path.Combine(folderPath, filename));
         File.Copy(path, Path.Combine(folderPath, filename));
         logoPath = filename;
