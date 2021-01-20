@@ -53,7 +53,7 @@ public class TourExporter
 
             Exported.Tour tour = new Exported.Tour
             {
-                tourProtocolVersion = "v0.6",
+                tourProtocolVersion = "v0.7",
                 firstStateId = firstState.GetExportedId(),
                 colorSchemes = Tour.Instance.colorSchemes.Select(cs => cs.color).ToArray(),
                 states = new List<Exported.State>(),
@@ -185,8 +185,7 @@ public class TourExporter
                 rotation = connection.Orientation,
                 stateIds = connection.states.Select(s => s.GetExportedId()).ToList(),
                 infos = connection.infos.ToList(),
-                minimizeWidth = connection.minimizeWidth,
-                minimizeHeight = connection.minimizeHeight,
+                minimizeScale = connection.minimizeScale,
                 groupStateRotationOverrides = connection
                     .rotationAfterStepAngles
                     .Select(p => new Exported.GroupStateLinkRotationOverride
