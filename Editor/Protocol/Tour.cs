@@ -10,6 +10,7 @@ namespace Packages.tour_creator.Editor.Protocol
     [Serializable]
     class Tour
     {
+        public string tourProtocolVersion;
         public string firstStateId;
         public List<State> states;
         public Color[] colorSchemes;

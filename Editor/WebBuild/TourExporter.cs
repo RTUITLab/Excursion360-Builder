@@ -53,6 +53,7 @@ public class TourExporter
 
             Exported.Tour tour = new Exported.Tour
             {
+                tourProtocolVersion = "v0.6",
                 firstStateId = firstState.GetExportedId(),
                 colorSchemes = Tour.Instance.colorSchemes.Select(cs => cs.color).ToArray(),
                 states = new List<Exported.State>(),
