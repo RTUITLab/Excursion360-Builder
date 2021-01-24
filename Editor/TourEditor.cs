@@ -5,6 +5,7 @@ using Packages.Excursion360_Builder.Editor.WebBuild;
 using Packages.Excursion360_Builder.Editor.SceneRenderers;
 
 #if UNITY_EDITOR
+using Packages.Excursion360_Builder.Editor.LivePreview;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
@@ -32,6 +33,7 @@ public class TourEditor
 
     private const string MENU_ITEM_NEW_TOUR = GROUP_NAME + "/New Tour";
     private const string MENU_ITEM_STATE_EDITOR = GROUP_NAME + "/State Editor";
+    private const string MENU_ITEM_LIVE_PREVIEW = GROUP_NAME + "/Live Preview";
 
     private const string MENU_ITEM_SHOW_CONNECTIONS = GROUP_NAME + "/Show Connections";
     private const string MENU_ITEM_SHOW_LABELS = GROUP_NAME + "/Show Labels";
@@ -106,6 +108,12 @@ public class TourEditor
     static void MenuItemShowStateEditorWindow()
     {
         EditorWindow.GetWindow<StateEditorWindow>("State Editor");
+    }
+    
+    [MenuItem(MENU_ITEM_LIVE_PREVIEW, false, 1)]
+    static void MenuItemShowLivePreviewEditorWindow()
+    {
+        EditorWindow.GetWindow<LivePreviwWindow>("Live preview");
     }
 
     [MenuItem(MENU_ITEM_SHOW_CONNECTIONS, false, 20)]

@@ -39,3 +39,5 @@ sysinfo.txt
 crashlytics-build.properties
 
 README.md.meta
+
+Documentation/**/*.meta
