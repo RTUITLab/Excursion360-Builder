@@ -23,33 +23,12 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         private string OutputFolder =>
             Path.GetFullPath($"{ProjectFolder}/output");
 
-        private List<string> logs = new List<string>();
-        private ConcurrentQueue<Action> actionsToMainThread = new ConcurrentQueue<Action>();
-        private Vector2 logsScrollPosition;
+        private readonly ConcurrentQueue<Action> actionsToMainThread = new ConcurrentQueue<Action>();
         public void OpenState(State state)
         {
             if (previewBackendProcess != null && !previewBackendProcess.HasExited)
             {
                 Application.OpenURL($"http://localhost:5000#{state.GetInstanceID()}");
-            }
-        }
-
-        private void Awake()
-        {
-            EditorApplication.update += CustomUpdate;
-        }
-
-        private void OnDestroy()
-        {
-            EditorApplication.update -= CustomUpdate;
-        }
-
-        // TODO Check works
-        private void CustomUpdate()
-        {
-            while (actionsToMainThread.TryDequeue(out var action))
-            {
-                action();
             }
         }
 
@@ -87,59 +66,9 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Start live preview backend"))
             {
-                if (!FindExistingProcess())
-                {
-                    StartLivePreviewBackend();
-                }
+                previewBackendProcess = LivePreviewProcessHelper.StartLivePreviewBackend(GetExecutablePath());
             }
             EditorGUILayout.EndHorizontal();
-        }
-
-        private bool FindExistingProcess()
-        {
-            var targetProcess = Process.GetProcesses()
-                .Where(p => p.ProcessName.Contains("Web"))
-                .Select(p =>
-                {
-                    try { return new { process = p, module = p.MainModule }; } catch { return null; }
-                })
-                .Where(m => m != null)
-                .FirstOrDefault(m => m.module.FileName == GetExecutablePath());
-            if (targetProcess != null)
-            {
-                previewBackendProcess = targetProcess.process;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private void StartLivePreviewBackend()
-        {
-            logs.Clear();
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = GetExecutablePath(),
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-            process.OutputDataReceived += (sender, args) =>
-            {
-                lock (logs)
-                {
-                    logs.Add(args.Data);
-                }
-                actionsToMainThread.Enqueue(Repaint);
-            };
-            process.Start();
-            process.BeginOutputReadLine();
-            previewBackendProcess = process;
         }
 
         private void DrawRunnedProcess()
@@ -156,20 +85,8 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             }
             else
             {
-                if (GUILayout.Button("Start again"))
-                {
-                    StartLivePreviewBackend();
-                }
+                previewBackendProcess = null;
             }
-            logsScrollPosition = EditorGUILayout.BeginScrollView(logsScrollPosition);
-            lock (logs)
-            {
-                foreach (var log in logs)
-                {
-                    GUILayout.Label(log);
-                }
-            }
-            EditorGUILayout.EndScrollView();
         }
 
         private void DrawBuildPreviewBackend()
