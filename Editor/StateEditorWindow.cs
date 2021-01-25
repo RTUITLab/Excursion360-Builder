@@ -5,6 +5,7 @@ using Excursion360_Builder.Editor.States.Items;
 using Packages.Excursion360_Builder.Editor.Extensions;
 using Packages.Excursion360_Builder.Editor;
 using Packages.Excursion360_Builder.Editor.States.Items;
+using Packages.Excursion360_Builder.Editor.LivePreview;
 
 #if UNITY_EDITOR
 
@@ -139,12 +140,19 @@ public class StateEditorWindow : EditorWindow
         GUILayout.Label("Actions: ", EditorStyles.boldLabel);
         GUILayout.BeginHorizontal();
 
+        
+
         if (GUILayout.Button("Focus camera", GUILayout.Height(50)))
         {
             FocusCamera(state.gameObject);
             SelectObject(state.gameObject);
         }
 
+        if (GUILayout.Button("Open preview", GUILayout.Height(50)))
+        {
+            var window = EditorWindow.GetWindow<LivePreviwWindow>("Live preview");
+            window.OpenState(state);
+        }
 
 
         GUILayout.EndHorizontal();

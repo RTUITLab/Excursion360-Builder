@@ -25,6 +25,14 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
 
         private List<string> logs = new List<string>();
         private ConcurrentQueue<Action> actionsToMainThread = new ConcurrentQueue<Action>();
+        private Vector2 logsScrollPosition;
+        public void OpenState(State state)
+        {
+            if (previewBackendProcess != null && !previewBackendProcess.HasExited)
+            {
+                Application.OpenURL($"http://localhost:5000#{state.GetInstanceID()}");
+            }
+        }
 
         private void Awake()
         {
@@ -76,17 +84,35 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         private void DrawReadyToStart()
         {
             GUILayout.Label("You can start live preview backend");
+            EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Start live preview backend"))
             {
-                StartLivePreviewBackend();
-            }
-
-            lock (logs)
-            {
-                foreach (var log in logs)
+                if (!FindExistingProcess())
                 {
-                    GUILayout.Label(log);
+                    StartLivePreviewBackend();
                 }
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private bool FindExistingProcess()
+        {
+            var targetProcess = Process.GetProcesses()
+                .Where(p => p.ProcessName.Contains("Web"))
+                .Select(p =>
+                {
+                    try { return new { process = p, module = p.MainModule }; } catch { return null; }
+                })
+                .Where(m => m != null)
+                .FirstOrDefault(m => m.module.FileName == GetExecutablePath());
+            if (targetProcess != null)
+            {
+                previewBackendProcess = targetProcess.process;
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -118,7 +144,8 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
 
         private void DrawRunnedProcess()
         {
-            GUILayout.Label(previewBackendProcess.HasExited ? $"exited {previewBackendProcess.ExitCode}" : "running");
+            GUILayout.Label(previewBackendProcess.HasExited ? $"exited {previewBackendProcess.ExitCode}" : $"running {(DateTime.Now - previewBackendProcess.StartTime):hh\\:mm\\:ss}");
+
             if (!previewBackendProcess.HasExited)
             {
                 if (GUILayout.Button("Stop"))
@@ -134,6 +161,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                     StartLivePreviewBackend();
                 }
             }
+            logsScrollPosition = EditorGUILayout.BeginScrollView(logsScrollPosition);
             lock (logs)
             {
                 foreach (var log in logs)
@@ -141,6 +169,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                     GUILayout.Label(log);
                 }
             }
+            EditorGUILayout.EndScrollView();
         }
 
         private void DrawBuildPreviewBackend()
@@ -166,7 +195,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             switch (Application.platform)
             {
                 case RuntimePlatform.WindowsEditor:
-                    return $"{OutputFolder}/Web.exe";
+                    return Path.Combine(OutputFolder, "Web.exe");
                 default: throw new Exception($"Platform {Application.platform} is not supported yet");
             }
         }
