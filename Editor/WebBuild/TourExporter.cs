@@ -8,6 +8,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.Core;
 using Packages.tour_creator.Editor.WebBuild;
 using Excursion360_Builder.Shared.States.Items.Field;
+using Packages.Excursion360_Builder.Editor.WebBuild;
 
 #if UNITY_EDITOR
 
@@ -16,11 +17,11 @@ using Exported = Packages.tour_creator.Editor.Protocol;
 
 public class TourExporter
 {
-    public static void ExportTour(string viewerLocation, string folderPath)
+    public static void ExportTour(BuildPack viewerPack, string folderPath)
     {
         try
         {
-            UnpackViewer(viewerLocation, folderPath);
+            UnpackViewer(viewerPack.Location, folderPath);
             if (!CopyLogo(folderPath, out var logoFileName))
             {
                 return;

@@ -74,7 +74,7 @@ public class Tour : MonoBehaviour
      */
     public float transitionSpeed = 2.0f;
 
-    public ColorScheme[] colorSchemes = new ColorScheme[] {new ColorScheme {color = Color.red, name = "default"}};
+    public ColorScheme[] colorSchemes = new ColorScheme[] { new ColorScheme { color = Color.red, name = "default" } };
 
     private State _currentState = null;
     private TextureSource _currentTextureSource = null;

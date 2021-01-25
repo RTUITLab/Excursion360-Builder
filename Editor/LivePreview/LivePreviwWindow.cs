@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Packages.Excursion360_Builder.Editor.Viewer;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -50,6 +51,8 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 DrawInstallDotNetMessage();
                 return;
             }
+
+            var selectedPack = ViewerBuildsGUI.Draw();
 
             if (!File.Exists(GetExecutablePath()))
             {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Packages.Excursion360_Builder.Editor.WebBuild
 {
-    class BuildPack
+    public class BuildPack
     {
         public int Id { get; set; }
         public string Version { get; set; }
@@ -16,7 +16,7 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
         public BuildPackStatus Status { get; set; }
     }
 
-    enum BuildPackStatus
+    public enum BuildPackStatus
     {
         NotLoaded,
         Loading,
