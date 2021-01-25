@@ -72,7 +72,7 @@ public class StateEditorWindow : EditorWindow
         GUILayout.FlexibleSpace();
         if (GUILayout.Button("Create new state", GUILayout.Height(50)))
         {
-            var newObject = PrefabUtility.InstantiatePrefab(TourEditor.StatePrefab) as GameObject;
+            var newObject = PrefabUtility.InstantiatePrefab(TourEditor.StatePrefab.Value) as GameObject;
             SelectObject(newObject);
             Undo.RegisterCreatedObjectUndo(newObject, "Undo state creation");
         }

@@ -3,6 +3,7 @@ using UnityEngine.Assertions;
 using Packages.tour_creator.Editor;
 using Packages.Excursion360_Builder.Editor.WebBuild;
 using Packages.Excursion360_Builder.Editor.SceneRenderers;
+using System;
 
 #if UNITY_EDITOR
 using Packages.Excursion360_Builder.Editor.LivePreview;
@@ -15,12 +16,12 @@ public class TourEditor
     /// <summary>
     /// Main viewer prefab
     /// </summary>
-    public static GameObject ViewSpherePrefab;
+    public static Lazy<GameObject> ViewSpherePrefab;
 
     /// <summary>
     /// Prefab used when spawning new state from State Editor window
     /// </summary>
-    public static GameObject StatePrefab;
+    public static Lazy<GameObject> StatePrefab;
 
     /// <summary>
     /// State graph renderer object
@@ -59,12 +60,13 @@ public class TourEditor
         };
 
         // Find view sphere prefab
-        ViewSpherePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Packages/com.rexagon.tour-creator/Prefabs/ViewSphere.prefab");
-        Assert.IsNotNull(ViewSpherePrefab, "ViewSphere prefab not found");
+        ViewSpherePrefab = new Lazy<GameObject>(
+            () => 
+            AssetDatabase.LoadAssetAtPath<GameObject>("Packages/com.rexagon.tour-creator/Prefabs/ViewSphere.prefab"));
 
         // Find state prefab
-        StatePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Packages/com.rexagon.tour-creator/Prefabs/State.prefab");
-        Assert.IsNotNull(StatePrefab, "State prefab not found");
+        StatePrefab = new Lazy<GameObject>(() =>
+            AssetDatabase.LoadAssetAtPath<GameObject>("Packages/com.rexagon.tour-creator/Prefabs/State.prefab"));
 
         // Create renderer
         StateGraphRenderer = new StateGraphRenderer();
@@ -90,8 +92,6 @@ public class TourEditor
     [MenuItem(MENU_ITEM_NEW_TOUR, false, 0)]
     static void MenuItemNewTour()
     {
-        ViewSpherePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Packages/com.rexagon.tour-creator/Prefabs/ViewSphere.prefab");
-        Assert.IsNotNull(ViewSpherePrefab);
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
         RenderSettings.skybox = null;
@@ -101,7 +101,7 @@ public class TourEditor
             GameObject.DestroyImmediate(gameObject);
         }
 
-        PrefabUtility.InstantiatePrefab(ViewSpherePrefab);
+        PrefabUtility.InstantiatePrefab(ViewSpherePrefab.Value);
     }
 
     [MenuItem(MENU_ITEM_STATE_EDITOR, false, 1)]
