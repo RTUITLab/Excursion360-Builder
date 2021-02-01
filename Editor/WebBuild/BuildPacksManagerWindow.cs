@@ -52,7 +52,7 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
                 {
                     return;
                 }
-                TourExporter.ExportTour(selectedViewer, outFolderPath);
+                TourExporter.ExportTour(selectedViewer, outFolderPath, ResourceHandlePath.CopyToDist);
             }
         }
     }

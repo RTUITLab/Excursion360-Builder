@@ -48,5 +48,9 @@ public class UrlImageSource : TextureSource
     {
         return textureUrl;
     }
+    public override string GetAssetPath()
+    {
+        return "";
+    }
 #endif
 }

@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Packages.tour_creator.Editor.Protocol
 {
     [Serializable]
-    class StateLink : StateItem
+    public class StateLink : StateItem
     {
         public string id = "state";
         public int colorScheme;

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Packages.Excursion360_Builder.Editor.LivePreview
 {
@@ -20,6 +21,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = executablePath,
+                    Arguments = $"StartupOptions:AssetsPath={Application.dataPath}",
                     WorkingDirectory = executableFolder,
                     RedirectStandardOutput = false,
                     UseShellExecute = false,

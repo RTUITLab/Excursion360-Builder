@@ -1,5 +1,6 @@
 ﻿using Packages.Excursion360_Builder.Editor.Viewer;
 using Packages.Excursion360_Builder.Editor.WebBuild;
+using Packages.tour_creator.Editor.WebBuild;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -25,12 +26,21 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         private string OutputFolder =>
             Path.GetFullPath($"{ProjectFolder}/output");
 
-        private readonly ConcurrentQueue<Action> actionsToMainThread = new ConcurrentQueue<Action>();
         public void OpenState(State state)
         {
+            var resourceFolder = Path.Combine(OutputFolder, "wwwroot");
+            Directory.CreateDirectory(resourceFolder);
+            var tour = TourExporter.GenerateTour(resourceFolder, ResourceHandlePath.PublishPath);
+            if (tour == null)
+            {
+                EditorUtility.DisplayDialog("Error", "Can't create tour", "Ok");
+                return;
+            }
+            File.WriteAllText(Path.Combine(resourceFolder, "tour.json"), JsonUtility.ToJson(tour));
             if (previewBackendProcess != null && !previewBackendProcess.HasExited)
             {
-                Application.OpenURL($"http://localhost:5000/index.html#{state.GetInstanceID()}");
+                Debug.Log(Application.dataPath);
+                Application.OpenURL($"http://localhost:5000/index.html#{state.GetExportedId()}");
             }
         }
 

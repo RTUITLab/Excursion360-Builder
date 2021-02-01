@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Web.Models.Options;
 
 namespace Web.Controllers
 {
@@ -20,14 +23,17 @@ namespace Web.Controllers
             return Ok(new { sceneUrl = "" });
         }
 
-        /// <summary>
-        /// Override default tour configuration
-        /// </summary>
-        /// <returns></returns>
-        [Route("tour.json")]
-        public ActionResult SceneJSON()
+        [Route("Assets/{*asset}")]
+        public ActionResult GetTexture(
+            [FromServices] IOptions<StartupOptions> options,
+            string asset)
         {
-            return Ok(new { config = "yes" });
+            var filePath = Path.Combine(options.Value.AssetsPath, asset?.TrimStart());
+            if (System.IO.File.Exists(filePath))
+            {
+                return new PhysicalFileResult(filePath, $"image/{Path.GetExtension(filePath).TrimStart('.')}");
+            }
+            return NotFound($"Can't locate file {asset}");
         }
     }
 }

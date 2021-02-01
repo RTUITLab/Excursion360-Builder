@@ -50,5 +50,6 @@ public abstract class TextureSource : MonoBehaviour
 
 #if UNITY_EDITOR
     public abstract string Export(string destination, string stateName);
+    public abstract string GetAssetPath();
 #endif
 }

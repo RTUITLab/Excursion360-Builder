@@ -17,7 +17,10 @@ using Exported = Packages.tour_creator.Editor.Protocol;
 
 public class TourExporter
 {
-    public static void ExportTour(BuildPack viewerPack, string folderPath)
+    public static void ExportTour(
+        BuildPack viewerPack,
+        string folderPath,
+        ResourceHandlePath resourceHandlePath)
     {
         try
         {
@@ -28,57 +31,7 @@ public class TourExporter
             }
             CreateConfigFile(folderPath, logoFileName);
 
-
-
-            // Find first state
-            if (Tour.Instance == null)
-            {
-                EditorUtility.DisplayDialog("Error", "There is no tour object on this scene!", "Ok");
-                return;
-            }
-
-            State firstState = Tour.Instance.firstState;
-            if (firstState == null)
-            {
-                EditorUtility.DisplayDialog("Error", "First state is not selected!", "Ok");
-                return;
-            }
-
-            // Find all states
-            State[] states = GameObject.FindObjectsOfType<State>();
-            if (states.Length == 0)
-            {
-                EditorUtility.DisplayDialog("Error", "There is no states on this scene to export!", "Ok");
-                return;
-            }
-
-            Exported.Tour tour = new Exported.Tour
-            {
-                tourProtocolVersion = "v0.7",
-                firstStateId = firstState.GetExportedId(),
-                colorSchemes = Tour.Instance.colorSchemes.Select(cs => cs.color).ToArray(),
-                states = new List<Exported.State>(),
-            };
-
-
-            Debug.Log($"Finded {states.Length} states");
-            // Pre process states
-            UpdateProcess(0, states.Length, "Exporting", "");
-
-            for (int i = 0; i < states.Length; ++i)
-            {
-                var state = states[i];
-
-                if (!TryHandleState(state, folderPath, out var exportedState))
-                {
-                    EditorUtility.DisplayDialog("Error", $"Error while exporting state {state.title}", "Ok");
-                    return;
-                }
-
-                tour.states.Add(exportedState);
-
-                UpdateProcess(i + 1, states.Length, "Exporting", $"{i + 1}/{states.Length}: {state.title}");
-            }
+            Exported.Tour tour = GenerateTour(folderPath, resourceHandlePath);
 
             // Serialize and write
             File.WriteAllText(folderPath + "/tour.json", JsonUtility.ToJson(tour, true));
@@ -94,10 +47,68 @@ public class TourExporter
         // Finish
     }
 
+    public static Exported.Tour GenerateTour(string folderPath, ResourceHandlePath resourceHandlePath)
+    {
+
+        // Find first state
+        if (Tour.Instance == null)
+        {
+            EditorUtility.DisplayDialog("Error", "There is no tour object on this scene!", "Ok");
+            return null;
+        }
+
+        State firstState = Tour.Instance.firstState;
+        if (firstState == null)
+        {
+            EditorUtility.DisplayDialog("Error", "First state is not selected!", "Ok");
+            return null;
+        }
+
+        // Find all states
+        State[] states = GameObject.FindObjectsOfType<State>();
+        if (states.Length == 0)
+        {
+            EditorUtility.DisplayDialog("Error", "There is no states on this scene to export!", "Ok");
+            return null;
+        }
+
+        Exported.Tour tour = PrepateTour(firstState);
+        Debug.Log($"Finded {states.Length} states");
+        // Pre process states
+        UpdateProcess(0, states.Length, "Exporting", "");
+
+        for (int i = 0; i < states.Length; ++i)
+        {
+            var state = states[i];
+
+            if (!TryHandleState(state, folderPath, resourceHandlePath, out var exportedState))
+            {
+                EditorUtility.DisplayDialog("Error", $"Error while exporting state {state.title}", "Ok");
+                return null;
+            }
+
+            tour.states.Add(exportedState);
+
+            UpdateProcess(i + 1, states.Length, "Exporting", $"{i + 1}/{states.Length}: {state.title}");
+        }
+        return tour;
+    }
+
+    private static Exported.Tour PrepateTour(State firstState)
+    {
+        return new Exported.Tour
+        {
+            tourProtocolVersion = "v0.7",
+            firstStateId = firstState.GetExportedId(),
+            colorSchemes = Tour.Instance.colorSchemes.Select(cs => cs.color).ToArray(),
+            states = new List<Exported.State>(),
+        };
+    }
 
     private static bool TryHandleState(
-        State state, 
+        State state,
         string folderPath,
+        ResourceHandlePath resourceHandlePath,
         out Exported.State exportedState)
     {
         exportedState = default;
@@ -112,7 +123,9 @@ public class TourExporter
         {
             id = stateId,
             title = state.title,
-            url = textureSource.Export(folderPath, stateId),
+            url = resourceHandlePath == ResourceHandlePath.CopyToDist ? textureSource.Export(folderPath, stateId) :
+                    resourceHandlePath == ResourceHandlePath.PublishPath ? textureSource.GetAssetPath() :
+                    throw new Exception($"incorrect ResourceHandlePath {resourceHandlePath}"),
             type = textureSource.SourceType.ToString().ToLower(),
             pictureRotation = state.transform.rotation,
             links = GetLinks(state),
