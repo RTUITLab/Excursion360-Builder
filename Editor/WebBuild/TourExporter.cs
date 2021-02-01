@@ -21,7 +21,7 @@ public class TourExporter
     {
         try
         {
-            UnpackViewer(viewerPack.Location, folderPath);
+            UnpackViewer(viewerPack, folderPath);
             if (!CopyLogo(folderPath, out var logoFileName))
             {
                 return;
@@ -232,12 +232,11 @@ public class TourExporter
         return true;
     }
 
-    private static void UnpackViewer(string viewerLocation, string folderPath)
+    public static void UnpackViewer(BuildPack viewer, string folderPath)
     {
-        using (var fileStream = File.OpenRead(viewerLocation))
+        using (var fileStream = File.OpenRead(viewer.Location))
         using (var zipInputStream = new ZipInputStream(fileStream))
         {
-
             while (zipInputStream.GetNextEntry() is ZipEntry zipEntry)
             {
                 var entryFileName = zipEntry.Name;

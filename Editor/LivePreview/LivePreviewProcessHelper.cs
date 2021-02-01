@@ -9,7 +9,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
 {
     class LivePreviewProcessHelper
     {
-        public static Process StartLivePreviewBackend(string executablePath)
+        public static Process StartLivePreviewBackend(string executableFolder, string executablePath)
         {
             if (FindExistingProcess(executablePath, out var process))
             {
@@ -20,6 +20,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = executablePath,
+                    WorkingDirectory = executableFolder,
                     RedirectStandardOutput = false,
                     UseShellExecute = false,
                     CreateNoWindow = true

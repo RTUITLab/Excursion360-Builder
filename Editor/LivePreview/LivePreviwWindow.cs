@@ -1,4 +1,5 @@
 ﻿using Packages.Excursion360_Builder.Editor.Viewer;
+using Packages.Excursion360_Builder.Editor.WebBuild;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
     {
         private bool isDotNetInstalled;
         private Process previewBackendProcess;
-
+        private BuildPack selectedBuildPack;
         private string ProjectFolder =>
             Path.GetFullPath("Packages/com.rexagon.tour-creator/.LiveViewer/Excursion360-Builder");
 
@@ -29,7 +30,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         {
             if (previewBackendProcess != null && !previewBackendProcess.HasExited)
             {
-                Application.OpenURL($"http://localhost:5000#{state.GetInstanceID()}");
+                Application.OpenURL($"http://localhost:5000/index.html#{state.GetInstanceID()}");
             }
         }
 
@@ -52,7 +53,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 return;
             }
 
-            var selectedPack = ViewerBuildsGUI.Draw();
+            selectedBuildPack = ViewerBuildsGUI.Draw();
 
             if (!File.Exists(GetExecutablePath()))
             {
@@ -69,7 +70,13 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Start live preview backend"))
             {
-                previewBackendProcess = LivePreviewProcessHelper.StartLivePreviewBackend(GetExecutablePath());
+                previewBackendProcess = LivePreviewProcessHelper.StartLivePreviewBackend(
+                    OutputFolder,
+                    GetExecutablePath());
+            }
+            if (GUILayout.Button("Rebuild"))
+            {
+                DotnetHelpers.BuildLivePreviewBackend(ProjectFolder, OutputFolder, selectedBuildPack);
             }
             EditorGUILayout.EndHorizontal();
         }
@@ -97,7 +104,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             GUILayout.Label("Please, build live preview backend");
             if (GUILayout.Button("Build"))
             {
-                DotnetHelpers.BuildLivePreviewBackend(ProjectFolder, OutputFolder);
+                DotnetHelpers.BuildLivePreviewBackend(ProjectFolder, OutputFolder, selectedBuildPack);
             }
         }
 

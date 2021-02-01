@@ -28,7 +28,8 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 var versions = sdks.Split('\n')
                     .Select(v => Regex.Match(v, @"^((?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+))"))
                     .Where(m => m.Success)
-                    .Select(m => new { 
+                    .Select(m => new
+                    {
                         Major = m.Groups["major"].Value,
                         Minor = m.Groups["minor"].Value,
                         Patch = m.Groups["patch"].Value
@@ -36,13 +37,16 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                     .ToList();
                 return versions.Any(v => v.Major == "5");
             }
-            catch (Exception ex) when(ex is Win32Exception || ex is FileNotFoundException)
+            catch (Exception ex) when (ex is Win32Exception || ex is FileNotFoundException)
             {
                 Debug.Log("not found dotnet");
                 return false;
             }
         }
-        public static void BuildLivePreviewBackend(string projectFolder, string outputFolder)
+        public static void BuildLivePreviewBackend(
+            string projectFolder,
+            string outputFolder,
+            WebBuild.BuildPack selectedBuildPack)
         {
             try
             {
@@ -69,6 +73,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 {
                     throw new Exception("Can't build live preview");
                 }
+                TourExporter.UnpackViewer(selectedBuildPack, Path.Combine(outputFolder, "wwwroot"));
             }
             catch (Exception ex)
             {
