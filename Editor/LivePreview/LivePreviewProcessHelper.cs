@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-
+using UnityEngine.Networking;
+using Exported = Packages.tour_creator.Editor.Protocol;
 namespace Packages.Excursion360_Builder.Editor.LivePreview
 {
     class LivePreviewProcessHelper
@@ -31,6 +33,41 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             process.Start();
             return process;
         }
+
+        public static IEnumerator SendCameraRotation(Quaternion rotation)
+        {
+            using (UnityWebRequest request = new UnityWebRequest(
+                "http://localhost:5000/api/interop/rotateCamera", "POST"
+                ))
+            {
+                byte[] bodyRaw = Encoding.UTF8.GetBytes(JsonUtility.ToJson(rotation));
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+                yield return request.SendWebRequest();
+                var row = request.downloadHandler.text;
+                UnityEngine.Debug.Log(request.responseCode);
+                UnityEngine.Debug.Log(row);
+            }
+        }
+
+        public static IEnumerator OpenTour(Exported.Tour tour)
+        {
+            using (UnityWebRequest request = new UnityWebRequest(
+                "http://localhost:5000/api/interop/openTour", "POST"
+                ))
+            {
+                byte[] bodyRaw = Encoding.UTF8.GetBytes(JsonUtility.ToJson(tour));
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+                yield return request.SendWebRequest();
+                var row = request.downloadHandler.text;
+                UnityEngine.Debug.Log(request.responseCode);
+                UnityEngine.Debug.Log(row);
+            }
+        }
+
         private static bool FindExistingProcess(string executablePath, out Process process)
         {
             var targetProcess = Process.GetProcesses()

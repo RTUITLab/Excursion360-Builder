@@ -28,6 +28,12 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
 
         public void OpenState(State state)
         {
+
+            if (previewBackendProcess == null || previewBackendProcess.HasExited)
+            {
+                EditorUtility.DisplayDialog("Info", "Please, start preview viewer", "Ok");
+                return;
+            }
             var resourceFolder = Path.Combine(OutputFolder, "wwwroot");
             Directory.CreateDirectory(resourceFolder);
             var tour = TourExporter.GenerateTour(resourceFolder, ResourceHandlePath.PublishPath);
@@ -36,12 +42,9 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 EditorUtility.DisplayDialog("Error", "Can't create tour", "Ok");
                 return;
             }
-            File.WriteAllText(Path.Combine(resourceFolder, "tour.json"), JsonUtility.ToJson(tour));
-            if (previewBackendProcess != null && !previewBackendProcess.HasExited)
-            {
-                Debug.Log(Application.dataPath);
-                Application.OpenURL($"http://localhost:5000/index.html#{state.GetExportedId()}");
-            }
+            tour.firstStateId = state.GetExportedId();
+            BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.SendCameraRotation(SceneView.lastActiveSceneView.rotation));
+            BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.OpenTour(tour));
         }
 
         private void OnEnable()
@@ -97,11 +100,17 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
 
             if (!previewBackendProcess.HasExited)
             {
+                EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button("Stop"))
                 {
                     previewBackendProcess.Kill();
                     previewBackendProcess = null;
                 }
+                if (GUILayout.Button("Open Preview page"))
+                {
+                    Application.OpenURL($"http://localhost:5000/index.html");
+                }
+                EditorGUILayout.EndHorizontal();
             }
             else
             {

@@ -90,6 +90,7 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
         }
         private static IEnumerator DownloadViewer(string folderPath)
         {
+            EditorUtility.DisplayProgressBar("Downloading", "Downloading latest viewer", 0);
             try
             {
                 ReleaseResponse parsed = null;

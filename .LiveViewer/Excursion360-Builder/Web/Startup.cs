@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Web.Hubs;
 using Web.Models.Options;
 
 namespace Web
@@ -25,6 +26,7 @@ namespace Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddSignalR();
             services.Configure<StartupOptions>(Configuration.GetSection(nameof(StartupOptions)));
         }
 
@@ -35,12 +37,19 @@ namespace Web
             {
                 app.UseDeveloperExceptionPage();
             }
-            app.UseStaticFiles();
+            app.UseCors(config => config
+                .AllowAnyMethod()
+                .WithOrigins("http://localhost:8088"));
+            app.UseWhen(
+                context => !context.Request.Path.StartsWithSegments("/index.html"),// owerride in SceneController
+                appBuilder => appBuilder.UseStaticFiles());
+            
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<InteropHub>("/interophub");
             });
         }
     }
