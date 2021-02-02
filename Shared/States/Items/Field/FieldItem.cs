@@ -15,17 +15,8 @@ namespace Excursion360_Builder.Shared.States.Items.Field
 
         public Texture texture;
 
-
-#if UNITY_EDITOR
-        public bool isOpened;
-#endif
-        private void Reset()
+        public FieldItem()
         {
-            if (vertices.Length != 0)
-            {
-                return;
-
-            }
             vertices = new FieldVertex[]
             {
                 new FieldVertex{ index = 0 },
@@ -34,5 +25,8 @@ namespace Excursion360_Builder.Shared.States.Items.Field
                 new FieldVertex{ index = 3, Orientation = Quaternion.AngleAxis(45, Vector3.right) }
             };
         }
+#if UNITY_EDITOR
+        public bool isOpened;
+#endif
     }
 }

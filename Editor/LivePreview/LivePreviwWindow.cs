@@ -28,6 +28,8 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
 
         public void OpenState(State state)
         {
+            try
+            {
 
             if (previewBackendProcess == null || previewBackendProcess.HasExited)
             {
@@ -45,6 +47,10 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             tour.firstStateId = state.GetExportedId();
             BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.SendCameraRotation(SceneView.lastActiveSceneView.rotation));
             BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.OpenTour(tour));
+            } finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
         }
 
         private void OnEnable()

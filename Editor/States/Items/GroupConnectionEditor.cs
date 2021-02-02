@@ -109,6 +109,7 @@ class GroupConnectionEditor : EditorBase
                 if (GUILayout.Button("Move to"))
                 {
                     StateEditorWindow.FocusCamera(stateReference.gameObject);
+                    Selection.objects = new UnityEngine.Object[] { stateReference.gameObject };
                 }
 
                 if (GUILayout.Button("To simple connection"))

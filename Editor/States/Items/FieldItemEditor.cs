@@ -15,7 +15,7 @@ namespace Excursion360_Builder.Editor.States.Items
         {
             if (GUILayout.Button("Add"))
             {
-                Undo.AddComponent<FieldItem>(state.gameObject);
+                var fieldItem = Undo.AddComponent<FieldItem>(state.gameObject);
             }
 
             EditorGUILayout.Space();

@@ -46,8 +46,6 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 request.SetRequestHeader("Content-Type", "application/json");
                 yield return request.SendWebRequest();
                 var row = request.downloadHandler.text;
-                UnityEngine.Debug.Log(request.responseCode);
-                UnityEngine.Debug.Log(row);
             }
         }
 
@@ -63,8 +61,6 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 request.SetRequestHeader("Content-Type", "application/json");
                 yield return request.SendWebRequest();
                 var row = request.downloadHandler.text;
-                UnityEngine.Debug.Log(request.responseCode);
-                UnityEngine.Debug.Log(row);
             }
         }
 
