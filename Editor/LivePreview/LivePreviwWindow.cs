@@ -53,6 +53,14 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             }
         }
 
+        private void OnDestroy()
+        {
+            if (previewBackendProcess != null && !previewBackendProcess.HasExited)
+            {
+                previewBackendProcess.Kill();
+            }
+        }
+
         private void OnEnable()
         {
             isDotNetInstalled = DotnetHelpers.CheckDotNetInstalled();
