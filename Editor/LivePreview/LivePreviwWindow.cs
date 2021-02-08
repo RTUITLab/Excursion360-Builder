@@ -22,9 +22,14 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         private BuildPack selectedBuildPack;
         private string ProjectFolder =>
             Path.GetFullPath("Packages/com.rexagon.tour-creator/.LiveViewer/Excursion360-Builder");
+        private string ProjectVersionFile =>
+            Path.GetFullPath("Packages/com.rexagon.tour-creator/.LiveViewer/Excursion360-Builder/Web/version.json");
 
         private string OutputFolder =>
             Path.GetFullPath($"{ProjectFolder}/output");
+
+        private string OutputVersionFile =>
+            Path.GetFullPath($"{ProjectFolder}/output/version.json");
 
         public void OpenState(State state)
         {
@@ -58,6 +63,14 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             if (previewBackendProcess != null && !previewBackendProcess.HasExited)
             {
                 previewBackendProcess.Kill();
+            }
+            if (!File.Exists(OutputVersionFile))
+            {
+                Directory.Delete(OutputFolder, true);
+            }
+            if (File.ReadAllText(OutputVersionFile) != File.ReadAllText(ProjectVersionFile))
+            {
+                Directory.Delete(OutputFolder, true);
             }
         }
 

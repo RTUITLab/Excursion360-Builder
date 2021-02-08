@@ -23,7 +23,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = executablePath,
-                    Arguments = $"StartupOptions:AssetsPath={Application.dataPath}",
+                    Arguments = $"StartupOptions:AssetsPath={Application.dataPath} StartupOptions:ParentProcessId={Process.GetCurrentProcess().Id}",
                     WorkingDirectory = executableFolder,
                     RedirectStandardOutput = false,
                     UseShellExecute = false,

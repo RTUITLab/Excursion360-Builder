@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Web.Hubs;
+using Web.Models;
 using Web.Models.Options;
+using Web.Services;
 
 namespace Web
 {
@@ -27,7 +29,9 @@ namespace Web
         {
             services.AddControllers();
             services.AddSignalR();
+            services.AddHostedService<WaitToParentProcessExit>();
             services.Configure<StartupOptions>(Configuration.GetSection(nameof(StartupOptions)));
+            services.Configure<PreviewServerVersion>(Configuration.GetSection(nameof(PreviewServerVersion)));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
