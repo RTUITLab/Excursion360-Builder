@@ -24,8 +24,13 @@ public class FileImageSource : TextureSource
         string path = AssetDatabase.GetAssetPath(texture);
         string filename = stateName + Path.GetExtension(path);
 
-        File.Copy(path, Path.Combine(destination, filename));
+        File.Copy(path, Path.Combine(destination, filename), true);
         return filename;
+    }
+
+    public override string GetAssetPath()
+    {
+        return AssetDatabase.GetAssetPath(texture);
     }
 #endif
 }

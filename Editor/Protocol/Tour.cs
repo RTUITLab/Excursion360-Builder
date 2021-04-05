@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Packages.tour_creator.Editor.Protocol
 {
     [Serializable]
-    class Tour
+    public class Tour
     {
         public string tourProtocolVersion;
         public string firstStateId;

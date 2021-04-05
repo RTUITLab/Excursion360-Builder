@@ -8,6 +8,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.Core;
 using Packages.tour_creator.Editor.WebBuild;
 using Excursion360_Builder.Shared.States.Items.Field;
+using Packages.Excursion360_Builder.Editor.WebBuild;
 
 #if UNITY_EDITOR
 
@@ -16,68 +17,21 @@ using Exported = Packages.tour_creator.Editor.Protocol;
 
 public class TourExporter
 {
-    public static void ExportTour(string viewerLocation, string folderPath)
+    public static void ExportTour(
+        BuildPack viewerPack,
+        string folderPath,
+        ResourceHandlePath resourceHandlePath)
     {
         try
         {
-            UnpackViewer(viewerLocation, folderPath);
+            UnpackViewer(viewerPack, folderPath);
             if (!CopyLogo(folderPath, out var logoFileName))
             {
                 return;
             }
             CreateConfigFile(folderPath, logoFileName);
 
-
-
-            // Find first state
-            if (Tour.Instance == null)
-            {
-                EditorUtility.DisplayDialog("Error", "There is no tour object on this scene!", "Ok");
-                return;
-            }
-
-            State firstState = Tour.Instance.firstState;
-            if (firstState == null)
-            {
-                EditorUtility.DisplayDialog("Error", "First state is not selected!", "Ok");
-                return;
-            }
-
-            // Find all states
-            State[] states = GameObject.FindObjectsOfType<State>();
-            if (states.Length == 0)
-            {
-                EditorUtility.DisplayDialog("Error", "There is no states on this scene to export!", "Ok");
-                return;
-            }
-
-            Exported.Tour tour = new Exported.Tour
-            {
-                tourProtocolVersion = "v0.7",
-                firstStateId = firstState.GetExportedId(),
-                colorSchemes = Tour.Instance.colorSchemes.Select(cs => cs.color).ToArray(),
-                states = new List<Exported.State>(),
-            };
-
-
-            Debug.Log($"Finded {states.Length} states");
-            // Pre process states
-            UpdateProcess(0, states.Length, "Exporting", "");
-
-            for (int i = 0; i < states.Length; ++i)
-            {
-                var state = states[i];
-
-                if (!TryHandleState(state, folderPath, out var exportedState))
-                {
-                    EditorUtility.DisplayDialog("Error", $"Error while exporting state {state.title}", "Ok");
-                    return;
-                }
-
-                tour.states.Add(exportedState);
-
-                UpdateProcess(i + 1, states.Length, "Exporting", $"{i + 1}/{states.Length}: {state.title}");
-            }
+            Exported.Tour tour = GenerateTour(folderPath, resourceHandlePath);
 
             // Serialize and write
             File.WriteAllText(folderPath + "/tour.json", JsonUtility.ToJson(tour, true));
@@ -93,10 +47,76 @@ public class TourExporter
         // Finish
     }
 
+    public static Exported.Tour GenerateTour(string folderPath, ResourceHandlePath resourceHandlePath)
+    {
+
+        // Find first state
+        if (Tour.Instance == null)
+        {
+            EditorUtility.DisplayDialog("Error", "There is no tour object on this scene!", "Ok");
+            return null;
+        }
+
+        State firstState = Tour.Instance.firstState;
+        if (firstState == null)
+        {
+            EditorUtility.DisplayDialog("Error", "First state is not selected!", "Ok");
+            return null;
+        }
+
+        // Find all states
+        State[] states = GameObject.FindObjectsOfType<State>();
+        if (states.Length == 0)
+        {
+            EditorUtility.DisplayDialog("Error", "There is no states on this scene to export!", "Ok");
+            return null;
+        }
+
+        Exported.Tour tour = PrepateTour(firstState);
+        Debug.Log($"Finded {states.Length} states");
+        // Pre process states
+        UpdateProcess(0, states.Length, "Exporting", "");
+
+        for (int i = 0; i < states.Length; ++i)
+        {
+            var state = states[i];
+
+            try
+            {
+                if (!TryHandleState(state, folderPath, resourceHandlePath, out var exportedState))
+                {
+                    EditorUtility.DisplayDialog("Error", $"Error while exporting state {state.title}", "Ok");
+                    return null;
+                }
+                tour.states.Add(exportedState);
+            }
+            catch (Exception ex)
+            {
+                EditorUtility.DisplayDialog("Error", $"Error while exporting state {state.title}\n{ex.Message}", "Ok");
+                return null;
+            }
+
+
+            UpdateProcess(i + 1, states.Length, "Exporting", $"{i + 1}/{states.Length}: {state.title}");
+        }
+        return tour;
+    }
+
+    private static Exported.Tour PrepateTour(State firstState)
+    {
+        return new Exported.Tour
+        {
+            tourProtocolVersion = "v0.7",
+            firstStateId = firstState.GetExportedId(),
+            colorSchemes = Tour.Instance.colorSchemes.Select(cs => cs.color).ToArray(),
+            states = new List<Exported.State>(),
+        };
+    }
 
     private static bool TryHandleState(
-        State state, 
+        State state,
         string folderPath,
+        ResourceHandlePath resourceHandlePath,
         out Exported.State exportedState)
     {
         exportedState = default;
@@ -107,21 +127,40 @@ public class TourExporter
             return false;
         }
         var stateId = state.GetExportedId();
+
+        string url;
+        switch (resourceHandlePath)
+        {
+            case ResourceHandlePath.CopyToDist:
+                url = textureSource.Export(folderPath, stateId);
+                break;
+            case ResourceHandlePath.PublishPath:
+                url = textureSource.GetAssetPath();
+                if (url.StartsWith("Packages"))
+                {
+                    EditorUtility.DisplayDialog("Error", "You can't use texture from Packages while preview. Please use textures only from Assets", "Ok");
+                    return false;
+                }
+                break;
+            default:
+                throw new Exception($"incorrect ResourceHandlePath {resourceHandlePath}");
+        }
+
         exportedState = new Exported.State
         {
             id = stateId,
             title = state.title,
-            url = textureSource.Export(folderPath, stateId),
+            url = url,
             type = textureSource.SourceType.ToString().ToLower(),
             pictureRotation = state.transform.rotation,
             links = GetLinks(state),
             groupLinks = GetGroupLinks(state),
-            fieldItems = GetFieldItems(state, folderPath)
+            fieldItems = GetFieldItems(state, folderPath, resourceHandlePath)
         };
         return true;
     }
 
-    private static List<Exported.FieldItem> GetFieldItems(State state, string folderPath)
+    private static List<Exported.FieldItem> GetFieldItems(State state, string folderPath, ResourceHandlePath resourceHandlePath)
     {
         var fieldItems = new List<Exported.FieldItem>();
 
@@ -133,20 +172,31 @@ public class TourExporter
             {
                 title = fieldItem.title,
                 vertices = fieldItem.vertices.Select(v => v.Orientation).ToArray(),
-                imageUrl = ExportTexture(fieldItem.texture, folderPath, fieldItem.GetExportedId().ToString())
+                imageUrl = ExportTexture(fieldItem.texture, folderPath, fieldItem.GetExportedId(), resourceHandlePath)
             });
         }
 
         return fieldItems;
     }
 
-    private static string ExportTexture(Texture textureToExport, string destination, string fileName)
+    private static string ExportTexture(Texture textureToExport, string destination, string fileName, ResourceHandlePath resourceHandlePath)
     {
         string path = AssetDatabase.GetAssetPath(textureToExport);
-        string filename = fileName + Path.GetExtension(path);
-
-        File.Copy(path, Path.Combine(destination, filename));
-        return filename;
+        switch (resourceHandlePath)
+        {
+            case ResourceHandlePath.CopyToDist:
+                string filename = fileName + Path.GetExtension(path);
+                File.Copy(path, Path.Combine(destination, filename));
+                return filename;
+            case ResourceHandlePath.PublishPath:
+                if (path.StartsWith("Packages"))
+                {
+                    throw new Exception($"You can't use texture from Packages while preview. Please use textures only from Assets");
+                }
+                return path;
+            default:
+                throw new Exception($"incorrect ResourceHandlePath {resourceHandlePath}");
+        }
     }
 
     private static List<Exported.StateLink> GetLinks(State state)
@@ -231,12 +281,11 @@ public class TourExporter
         return true;
     }
 
-    private static void UnpackViewer(string viewerLocation, string folderPath)
+    public static void UnpackViewer(BuildPack viewer, string folderPath)
     {
-        using (var fileStream = File.OpenRead(viewerLocation))
+        using (var fileStream = File.OpenRead(viewer.Location))
         using (var zipInputStream = new ZipInputStream(fileStream))
         {
-
             while (zipInputStream.GetNextEntry() is ZipEntry zipEntry)
             {
                 var entryFileName = zipEntry.Name;

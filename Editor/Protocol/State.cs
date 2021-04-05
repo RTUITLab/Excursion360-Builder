@@ -9,7 +9,7 @@ namespace Packages.tour_creator.Editor.Protocol
 {
 
     [Serializable]
-    class State
+    public class State
     {
         public string id;
         public string title;

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Packages.tour_creator.Editor.Protocol
 {
     [Serializable]
-    class GroupStateLink : StateItem
+    public class GroupStateLink : StateItem
     {
         public string title;
         public List<string> stateIds;
@@ -17,7 +17,7 @@ namespace Packages.tour_creator.Editor.Protocol
     }
 
     [Serializable]
-    class GroupStateLinkRotationOverride
+    public class GroupStateLinkRotationOverride
     {
         public string stateId;
         public float rotationAfterStepAngle;

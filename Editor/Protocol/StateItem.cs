@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Packages.tour_creator.Editor.Protocol
 {
     [Serializable]
-    class StateItem
+    public class StateItem
     {
         public Quaternion rotation;
     }

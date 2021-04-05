@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Packages.tour_creator.Editor.Protocol
 {
     [Serializable]
-    class FieldItem
+    public class FieldItem
     {
         public string title;
         public Quaternion[] vertices;

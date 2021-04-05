@@ -38,7 +38,7 @@ public class FileVideoSource : TextureSource
         }
 
         if (_currentVideoClip == null || _currentVideoClip != videoClip)
-        { 
+        {
             _currentVideoClip = videoClip;
             _currentRenderTexture = new RenderTexture((int)videoClip.width, (int)videoClip.height, 0,
                 RenderTextureFormat.ARGB32);
@@ -70,7 +70,7 @@ public class FileVideoSource : TextureSource
         _currentVideoPlayer.isLooping = playMode == PlayMode.LoopInBackground;
 
         _currentVideoPlayer.clip = videoClip;
-        
+
         _currentVideoPlayer.time = 0;
         _currentVideoPlayer.Play();
 
@@ -80,7 +80,7 @@ public class FileVideoSource : TextureSource
     protected override void OnStopUsing()
     {
         if (playMode != PlayMode.LoopInBackground)
-        { 
+        {
             Tour.Instance.videoPlayerPool.Release(_currentVideoPlayer);
         }
     }
@@ -91,7 +91,7 @@ public class FileVideoSource : TextureSource
         string path = AssetDatabase.GetAssetPath(videoClip);
         string filename = stateName + Path.GetExtension(path);
 
-        File.Copy(path, Path.Combine(destination, filename));
+        File.Copy(path, Path.Combine(destination, filename), true);
         return filename;
     }
 #endif
@@ -107,5 +107,10 @@ public class FileVideoSource : TextureSource
         previewGenerator.renderTexture = _currentRenderTexture;
 
         previewGeneratorObject.SetActive(true);
+    }
+
+    public override string GetAssetPath()
+    {
+        return AssetDatabase.GetAssetPath(videoClip);
     }
 }
