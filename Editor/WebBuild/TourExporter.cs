@@ -106,7 +106,7 @@ public class TourExporter
     {
         return new Exported.Tour
         {
-            tourProtocolVersion = "v0.7",
+            tourProtocolVersion = "v0.8",
             firstStateId = firstState.GetExportedId(),
             colorSchemes = Tour.Instance.colorSchemes.Select(cs => cs.color).ToArray(),
             states = new List<Exported.State>(),
@@ -172,16 +172,34 @@ public class TourExporter
             {
                 title = fieldItem.title,
                 vertices = fieldItem.vertices.Select(v => v.Orientation).ToArray(),
-                imageUrl = ExportTexture(fieldItem.texture, folderPath, fieldItem.GetExportedId(), resourceHandlePath)
+                images = fieldItem.images.Select((t, i) => ExportResource(
+                    t,
+                    folderPath,
+                    $"{fieldItem.GetExportedId()}_{i}",
+                    resourceHandlePath))
+                .ToArray(),
+                videos = fieldItem.videos.Select((t, i) => ExportResource(
+                    t,
+                    folderPath,
+                    $"{fieldItem.GetExportedId()}_{i}",
+                    resourceHandlePath))
+                .ToArray(),
+                text = fieldItem.text,
+                audios = fieldItem.audios.Select((t, i) => ExportResource(
+                    t,
+                    folderPath,
+                    $"{fieldItem.GetExportedId()}_{i}",
+                    resourceHandlePath))
+                .ToArray()
             });
         }
 
         return fieldItems;
     }
 
-    private static string ExportTexture(Texture textureToExport, string destination, string fileName, ResourceHandlePath resourceHandlePath)
+    private static string ExportResource(UnityEngine.Object resourceToExport, string destination, string fileName, ResourceHandlePath resourceHandlePath)
     {
-        string path = AssetDatabase.GetAssetPath(textureToExport);
+        string path = AssetDatabase.GetAssetPath(resourceToExport);
         switch (resourceHandlePath)
         {
             case ResourceHandlePath.CopyToDist:
