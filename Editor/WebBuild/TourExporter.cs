@@ -185,11 +185,15 @@ public class TourExporter
                     resourceHandlePath))
                 .ToArray(),
                 text = fieldItem.text,
-                audios = fieldItem.audios.Select((t, i) => ExportResource(
-                    t,
-                    folderPath,
-                    $"{fieldItem.GetExportedId()}_{i}",
-                    resourceHandlePath))
+                audios = fieldItem.audios.Select((t, i) => new Exported.FieldItemAudioContent
+                {
+                    src = ExportResource(
+                        t,
+                        folderPath,
+                        $"{fieldItem.GetExportedId()}_{i}",
+                        resourceHandlePath),
+                    duration = t.length
+                })
                 .ToArray()
             });
         }

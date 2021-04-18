@@ -15,6 +15,6 @@ namespace Packages.tour_creator.Editor.Protocol
         public string[] images;
         public string[] videos;
         public string text;
-        public string[] audios;
+        public FieldItemAudioContent[] audios;
     }
 }
