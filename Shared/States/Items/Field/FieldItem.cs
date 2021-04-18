@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Video;
 
 namespace Excursion360_Builder.Shared.States.Items.Field
 {
@@ -14,6 +15,20 @@ namespace Excursion360_Builder.Shared.States.Items.Field
         public string title;
 
         public Texture texture;
+        public List<Texture> images = new List<Texture>();
+        public List<VideoClip> videos = new List<VideoClip>();
+        public List<AudioClip> audios = new List<AudioClip>();
+        [TextArea(10, 120)]
+        public string text;
+        private void OnDrawGizmos()
+        {
+            // TODO Delete texture field after several releases
+            if (texture)
+            {
+                images.Add(texture);
+                texture = default;
+            }
+        }
 
         public FieldItem()
         {
@@ -27,6 +42,7 @@ namespace Excursion360_Builder.Shared.States.Items.Field
         }
 #if UNITY_EDITOR
         public bool isOpened;
+        public int attachmentsTabIndex;
 #endif
     }
 }

@@ -12,6 +12,9 @@ namespace Packages.tour_creator.Editor.Protocol
     {
         public string title;
         public Quaternion[] vertices;
-        public string imageUrl;
+        public string[] images;
+        public string[] videos;
+        public string text;
+        public FieldItemAudioContent[] audios;
     }
 }
