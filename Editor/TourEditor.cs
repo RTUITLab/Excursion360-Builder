@@ -113,7 +113,7 @@ public class TourEditor
     [MenuItem(MENU_ITEM_LIVE_PREVIEW, false, 1)]
     static void MenuItemShowLivePreviewEditorWindow()
     {
-        EditorWindow.GetWindow<LivePreviwWindow>("Live preview");
+        EditorWindow.GetWindow<LivePreviewWindow>("Live preview");
     }
 
     [MenuItem(MENU_ITEM_SHOW_CONNECTIONS, false, 20)]

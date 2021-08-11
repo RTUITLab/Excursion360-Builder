@@ -15,7 +15,7 @@ using Debug = UnityEngine.Debug;
 
 namespace Packages.Excursion360_Builder.Editor.LivePreview
 {
-    public class LivePreviwWindow : EditorWindow
+    public class LivePreviewWindow : EditorWindow
     {
         private bool isDotNetInstalled;
         private Process previewBackendProcess;
@@ -36,23 +36,25 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             try
             {
 
-            if (previewBackendProcess == null || previewBackendProcess.HasExited)
-            {
-                EditorUtility.DisplayDialog("Info", "Please, start preview viewer", "Ok");
-                return;
+                if (previewBackendProcess == null || previewBackendProcess.HasExited)
+                {
+                    EditorUtility.DisplayDialog("Info", "Please, start preview viewer", "Ok");
+                    Focus();
+                    return;
+                }
+                var resourceFolder = Path.Combine(OutputFolder, "wwwroot");
+                Directory.CreateDirectory(resourceFolder);
+                var tour = TourExporter.GenerateTour(TourExporter.GenerateTourOptions.ForPreview(resourceFolder));
+                if (tour == null)
+                {
+                    EditorUtility.DisplayDialog("Error", "Can't create tour", "Ok");
+                    return;
+                }
+                tour.firstStateId = state.GetExportedId();
+                BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.SendCameraRotation(SceneView.lastActiveSceneView.rotation));
+                BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.OpenTour(tour));
             }
-            var resourceFolder = Path.Combine(OutputFolder, "wwwroot");
-            Directory.CreateDirectory(resourceFolder);
-            var tour = TourExporter.GenerateTour(resourceFolder, ResourceHandlePath.PublishPath);
-            if (tour == null)
-            {
-                EditorUtility.DisplayDialog("Error", "Can't create tour", "Ok");
-                return;
-            }
-            tour.firstStateId = state.GetExportedId();
-            BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.SendCameraRotation(SceneView.lastActiveSceneView.rotation));
-            BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.OpenTour(tour));
-            } finally
+            finally
             {
                 EditorUtility.ClearProgressBar();
             }

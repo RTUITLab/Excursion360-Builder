@@ -150,7 +150,7 @@ public class StateEditorWindow : EditorWindow
 
         if (GUILayout.Button("Open preview", GUILayout.Height(50)))
         {
-            var window = EditorWindow.GetWindow<LivePreviwWindow>("Live preview");
+            var window = EditorWindow.GetWindow<LivePreviewWindow>("Live preview", focus: false);
             window.OpenState(state);
         }
 
