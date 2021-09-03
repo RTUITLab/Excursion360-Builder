@@ -8,6 +8,6 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems
 {
     internal class WebViewerBuildPack : RemoteBuildPack
     {
-        public string Location { get; set; }
+        public string ArchiveLocation { get; set; }
     }
 }

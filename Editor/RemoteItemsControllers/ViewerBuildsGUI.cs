@@ -87,7 +87,7 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                 {
                     Id = int.Parse(b.match.Groups["id"].Value),
                     Version = b.match.Groups["tag"].Value,
-                    Location = b.path
+                    ArchiveLocation = b.path
                 })
                 .ToList();
             buildPackTags = buildPacks.Select(p => p.Version).ToArray();
@@ -211,7 +211,7 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                     EditorGUILayout.LabelField($"Publish date: {pack.PublishDate:yyyy-MM-dd}");
                     if (GUI.Button(EditorGUI.IndentedRect(EditorGUILayout.GetControlRect()), "Remove"))
                     {
-                        File.Delete(pack.Location);
+                        File.Delete(pack.ArchiveLocation);
                         FindBuildPacks();
                     }
                     break;

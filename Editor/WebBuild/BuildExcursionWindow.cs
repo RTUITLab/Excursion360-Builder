@@ -1,5 +1,6 @@
 ﻿using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
+using Packages.Excursion360_Builder.Editor.RemoteItemsControllers;
 using Packages.Excursion360_Builder.Editor.Viewer;
 using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using Packages.tour_creator.Editor.WebBuild;
@@ -21,11 +22,12 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
     class BuildExcursionWindow : EditorWindow
     {
         private string outFolderPath;
-        private int imageCroppingLevel = 6;
+        private int imageCroppingLevel;
 
         private void OnEnable()
         {
             outFolderPath = Tour.Instance != null ? Tour.Instance.targetBuildLocation : null;
+            imageCroppingLevel = Tour.Instance != null ? Tour.Instance.croppingLevel : 6;
         }
 
         private void OnGUI()
@@ -43,10 +45,15 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Place desktop viewer", EditorStyles.boldLabel);
-            DesktopClientBuildsGUI.Draw();
+            var selectedDesktopClient = DesktopClientBuildsGUI.Draw();
+
+            if (selectedDesktopClient == null)
+            {
+                return;
+            }
 
             EditorGUILayout.Space();
-            DrawExportButton(selectedViewer);
+            DrawExportButton(selectedViewer, selectedDesktopClient);
         }
 
         private void DrawExportingSection()
@@ -66,11 +73,17 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
                 SceneView.RepaintAll();
             }
             EditorGUILayout.EndHorizontal();
-            imageCroppingLevel = EditorGUILayout.IntSlider("Image cropping level", imageCroppingLevel, ImageCropper.MIN_PARTS_COUNT, ImageCropper.MAX_PARTS_COUNT);
-            
+            var newImageCroppingLevel = EditorGUILayout.IntSlider("Image cropping level", imageCroppingLevel, ImageCropper.MIN_PARTS_COUNT, ImageCropper.MAX_PARTS_COUNT);
+            if (newImageCroppingLevel != imageCroppingLevel)
+            {
+                imageCroppingLevel = newImageCroppingLevel;
+                Tour.Instance.croppingLevel = imageCroppingLevel;
+                EditorUtility.SetDirty(Tour.Instance);
+            }
+
         }
 
-        private void DrawExportButton(WebViewerBuildPack selectedViewer)
+        private void DrawExportButton(WebViewerBuildPack selectedViewer, DesktopClientBuildPack selectedDesktopClient)
         {
             if (GUILayout.Button("Export"))
             {
@@ -78,7 +91,7 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
                 {
                     return;
                 }
-                TourExporter.ExportTour(new TourExporter.ExportOptions(selectedViewer, outFolderPath, imageCroppingLevel));
+                TourExporter.ExportTour(new TourExporter.ExportOptions(selectedViewer, selectedDesktopClient, outFolderPath, imageCroppingLevel));
             }
         }
     }

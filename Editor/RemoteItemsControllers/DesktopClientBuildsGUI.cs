@@ -13,12 +13,13 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Packages.Excursion360_Builder.Editor.Viewer
+namespace Packages.Excursion360_Builder.Editor.RemoteItemsControllers
 {
     internal static class DesktopClientBuildsGUI
     {
+        private const string GITHUB_REPO = "Excursion360-Desktop";
         private static string packsLocation;
-        private static List<WebViewerBuildPack> builds = new List<WebViewerBuildPack>();
+        private static List<DesktopClientBuildPack> builds = new List<DesktopClientBuildPack>();
         private static string[] buildPackVersions = Array.Empty<string>();
         private static int selectedbuildTagNum = 0;
 
@@ -32,16 +33,16 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
             FindDesktopPacks();
             selectedbuildTagNum = builds.Count - 1;
         }
-        public static WebViewerBuildPack Draw()
+        public static DesktopClientBuildPack Draw()
         {
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Download last desctop client"))
+            if (GUILayout.Button("Download last desktop client"))
             {
-                BackgroundTaskInvoker.StartBackgroundTask(DownloadDesktopClient(packsLocation, ReleaseType.OnlyStable));
+                BackgroundTaskInvoker.StartBackgroundTask(DownloadDesktopClient(ReleaseType.OnlyStable));
             }
             if (GUILayout.Button("pre-release"))
             {
-                BackgroundTaskInvoker.StartBackgroundTask(DownloadDesktopClient(packsLocation, ReleaseType.WithPreRelease));
+                BackgroundTaskInvoker.StartBackgroundTask(DownloadDesktopClient(ReleaseType.WithPreRelease));
             }
             EditorGUILayout.EndHorizontal();
 
@@ -82,14 +83,16 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
         private static void FindDesktopPacks()
         {
             builds = Directory.GetDirectories(packsLocation)
-                .Select(path => (path, match: Regex.Match(path, @"(?<tag>\S+)-(?<id>\d+)")))
-                .Select(b => new WebViewerBuildPack
+                .Select(path => (path, match: Regex.Match(path, @"(?<tag>[^\\/]+)-(?<id>\d+)")))
+                .Select(b => new DesktopClientBuildPack
                 {
                     Id = int.Parse(b.match.Groups["id"].Value),
                     Version = b.match.Groups["tag"].Value,
-                    Location = b.path
+                    FolderLocation = b.path
                 })
                 .ToList();
+
+
             buildPackVersions = builds.Select(p => p.Version).ToArray();
             selectedbuildTagNum = buildPackVersions
                 .Select((tag, i) => (tag, i))
@@ -97,16 +100,17 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                 .FirstOrDefault()
                 .i;
         }
-        enum ReleaseType { OnlyStable, WithPreRelease }
-        private static IEnumerator DownloadDesktopClient(string folderPath, ReleaseType releaseType)
+        
+        private static IEnumerator DownloadDesktopClient(ReleaseType releaseType)
         {
             EditorUtility.DisplayProgressBar("Downloading", "Downloading latest desktop client", 0);
             try
             {
                 ReleaseResponse parsed = null;
                 string errorMessage = null;
-                var downloadingTask = DownloadReleaseInfo(
-                    releaseType == ReleaseType.WithPreRelease ? "?per_page=1" : "/latest",
+                var downloadingTask = GitHubApi.GetLatestReleaseForRepo(
+                    GITHUB_REPO,
+                    releaseType,
                     r => parsed = r,
                     e => errorMessage = e);
                 while (downloadingTask.MoveNext())
@@ -118,24 +122,37 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                     EditorUtility.DisplayDialog("Error", errorMessage, "Ok");
                     yield break;
                 }
-                var targetLink = parsed.assets.FirstOrDefault(a => a.name == "build.zip");
-                if (targetLink == null)
+
+                var exeAssets = parsed.assets.Where(a => a.name.EndsWith(".exe")).ToArray();
+                if (exeAssets.Length == 0)
                 {
                     EditorUtility.DisplayDialog("Error", "No needed asset in latest release", "Ok");
                     yield break;
                 }
 
-                using (UnityWebRequest w = UnityWebRequest.Get(targetLink.browser_download_url))
-                {
-                    w.SetRequestHeader("User-Agent", "Mozilla/5.0");
-                    yield return w.SendWebRequest();
+                var versionDirectory = Path.Combine(packsLocation, $"{parsed.tag_name}-{parsed.id}");
+                Directory.CreateDirectory(versionDirectory);
 
-                    while (w.isDone == false)
+                foreach (var exe in exeAssets)
+                {
+                    var downloadRequest = GitHubApi.InvokeGetRequest(exe.browser_download_url, $"Downloading {exe.name}",
+                        handler =>
+                        {
+                            File.WriteAllBytes(Path.Combine(versionDirectory, exe.name), handler.data);
+                        },
+                        error =>
+                        {
+                            errorMessage = error;
+                        });
+                    while (downloadRequest.MoveNext())
                     {
-                        yield return null;
-                        EditorUtility.DisplayProgressBar("Downloading", "Downloading viewer", w.downloadProgress);
+                        yield return downloadRequest.Current;
+                        if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            EditorUtility.DisplayDialog("Error", errorMessage, "Ok");
+                            yield break;
+                        }
                     }
-                    File.WriteAllBytes(Path.Combine(folderPath, $"web-viewer-{parsed.tag_name}-{parsed.id}.zip"), w.downloadHandler.data);
                 }
             }
             finally
@@ -144,60 +161,14 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                 FindDesktopPacks();
             }
         }
-        private static IEnumerator DownloadReleaseInfo(int releaseId, Action<ReleaseResponse> done, Action<string> error)
-           => DownloadReleaseInfo("/" + releaseId.ToString(), done, error);
-        private static IEnumerator DownloadReleaseInfo(string releaseId,
-            Action<ReleaseResponse> done,
-            Action<string> error)
-        {
-            try
-            {
-                string raw;
-                using (UnityWebRequest w = UnityWebRequest.Get("https://api.github.com/repos/RTUITLab/Excursion360-Desktop/releases" + releaseId))
-                {
-                    w.SetRequestHeader("User-Agent", "Mozilla/5.0");
-                    yield return w.SendWebRequest();
-                    EditorUtility.DisplayProgressBar("Release info", $"Fetching release information {releaseId}", 0f);
-                    while (w.isDone == false)
-                    {
-                        yield return null;
-                        EditorUtility.DisplayProgressBar("Downloading", $"Fetching release information {releaseId}", w.downloadProgress);
-                    }
-                    raw = w.downloadHandler.text;
-                    if (w.isHttpError)
-                    {
-                        error(raw);
-                        yield break;
-                    }
-                }
-                try
-                {
-                    var parsed = JsonUtility.FromJson<ReleaseResponse>(raw);
-                    done(parsed);
-                }
-                catch (ArgumentException)
-                {
-                    raw = $"{{\"items\": {raw}}}";// wrap array into object
-                    var parsed = JsonUtility.FromJson<Wrapper<ReleaseResponse>>(raw).items[0];
-                    done(parsed);
-                }
-                catch (Exception ex)
-                {
-                    error(ex.Message);
-                }
-            }
-            finally
-            {
-                EditorUtility.ClearProgressBar();
-            }
-        }
-        private static void RenderClientVersion(WebViewerBuildPack pack)
+        
+        private static void RenderClientVersion(DesktopClientBuildPack pack)
         {
             EditorGUI.indentLevel++;
             switch (pack.Status)
             {
                 case BuildPackStatus.NotLoaded:
-                    BackgroundTaskInvoker.StartBackgroundTask(DownloadReleaseInfo(pack.Id, p =>
+                    BackgroundTaskInvoker.StartBackgroundTask(GitHubApi.GetReleaseForRep(GITHUB_REPO, pack.Id, p =>
                     {
                         pack.PublishDate = p.PublishedAt;
                         pack.Status = BuildPackStatus.Loaded;
@@ -211,7 +182,7 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                     EditorGUILayout.LabelField($"Publish date: {pack.PublishDate:yyyy-MM-dd}");
                     if (GUI.Button(EditorGUI.IndentedRect(EditorGUILayout.GetControlRect()), "Remove"))
                     {
-                        File.Delete(pack.Location);
+                        Directory.Delete(pack.FolderLocation, true);
                         FindDesktopPacks();
                     }
                     break;
@@ -224,15 +195,6 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
             }
             EditorGUI.indentLevel--;
         }
-        /// <summary>
-        /// Used for deserialize JSON array
-        /// </summary>
-        /// <typeparam name="T">types of object in array</typeparam>
-        [Serializable]
-        private class Wrapper<T>
-        {
-            public T[] items;
-        }
     }
-    
+
 }

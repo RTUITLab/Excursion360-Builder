@@ -44,7 +44,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 }
                 var resourceFolder = Path.Combine(OutputFolder, "wwwroot");
                 Directory.CreateDirectory(resourceFolder);
-                var tour = TourExporter.GenerateTour(TourExporter.GenerateTourOptions.ForPreview(resourceFolder));
+                var tour = TourExporter.GenerateTour(resourceFolder, TourExporter.GenerateTourOptions.ForPreview());
                 if (tour == null)
                 {
                     EditorUtility.DisplayDialog("Error", "Can't create tour", "Ok");

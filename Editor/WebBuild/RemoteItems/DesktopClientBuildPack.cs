@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems
 {
-    class DesktopClientBuildPack : RemoteBuildPack
+    internal class DesktopClientBuildPack : RemoteBuildPack
     {
+        public string FolderLocation { get; set; }
     }
 }

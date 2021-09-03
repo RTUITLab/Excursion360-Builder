@@ -20,48 +20,73 @@ internal class TourExporter
 {
     internal class GenerateTourOptions
     {
-        public string FolderPath { get; private set; }
-        public ResourceHandlePath ResourceHandlePath { get; private set; }
-        public int ImageCroppingLevel { get; private set; }
-        protected GenerateTourOptions(string folderPath, ResourceHandlePath resourceHandlePath, int imageCroppingLevel)
+        public ResourceHandlePath ResourceHandlePath { get; }
+        public int ImageCroppingLevel { get; }
+        protected GenerateTourOptions(ResourceHandlePath resourceHandlePath, int imageCroppingLevel)
         {
-            FolderPath = folderPath;
             ResourceHandlePath = resourceHandlePath;
             ImageCroppingLevel = imageCroppingLevel;
         }
-        public static GenerateTourOptions ForPreview(string targetFolderPath)
+        public static GenerateTourOptions ForPreview()
         {
-            return new GenerateTourOptions(targetFolderPath, ResourceHandlePath.PublishPath, 0);
+            return new GenerateTourOptions(ResourceHandlePath.PublishPath, 0);
         }
     }
     internal class ExportOptions : GenerateTourOptions
     {
-        public WebViewerBuildPack ViewerPack { get; private set; }
+        public string FolderPath { get; }
+        public WebViewerBuildPack ViewerPack { get; }
+        public DesktopClientBuildPack DesktopClientBuildPack { get; }
 
-        public ExportOptions(WebViewerBuildPack viewerPack, string targetFolderPath, int imageCroppingLevel) : base(targetFolderPath, ResourceHandlePath.CopyToDist, imageCroppingLevel)
+        public ExportOptions(
+            WebViewerBuildPack viewerPack,
+            DesktopClientBuildPack desktopClientBuildPack,
+            string folderPath,
+            int imageCroppingLevel)
+            : base(ResourceHandlePath.CopyToDist, imageCroppingLevel)
         {
+            FolderPath = folderPath;
             ViewerPack = viewerPack;
+            DesktopClientBuildPack = desktopClientBuildPack;
         }
     }
     public static void ExportTour(ExportOptions exportOptions)
     {
-        var viewerPack = exportOptions.ViewerPack;
-        var folderPath = exportOptions.FolderPath;
+        if (Tour.Instance == null)
+        {
+            EditorUtility.DisplayDialog("Error", "There is no tour object on this scene!", "Ok");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(Tour.Instance.title))
+        {
+            EditorUtility.DisplayDialog("Error", "You must provide tour title", "Ok");
+            return;
+        }
+
+        var excursionFolder = Path.Combine(exportOptions.FolderPath, Tour.Instance.title);
+        Directory.CreateDirectory(excursionFolder);
+
 
         try
         {
-            UnpackViewer(viewerPack, folderPath);
-            if (!CopyLogo(folderPath, out var logoFileName))
+            UnpackViewer(exportOptions.ViewerPack, excursionFolder);
+
+            if (exportOptions.DesktopClientBuildPack != null)
+            {
+                UnpackDesktopClient(exportOptions.DesktopClientBuildPack, exportOptions.FolderPath);
+            }
+
+            if (!CopyLogo(excursionFolder, out var logoFileName))
             {
                 return;
             }
 
-            CreateConfigFile(folderPath, logoFileName);
+            CreateConfigFile(excursionFolder, logoFileName);
 
-            Exported.Tour tour = GenerateTour(exportOptions);
+            Exported.Tour tour = GenerateTour(excursionFolder, exportOptions);
 
             // Serialize and write
-            File.WriteAllText(folderPath + "/tour.json", JsonUtility.ToJson(tour, true));
+            File.WriteAllText(excursionFolder + "/tour.json", JsonUtility.ToJson(tour, true));
         }
         catch (Exception ex)
         {
@@ -74,17 +99,9 @@ internal class TourExporter
         // Finish
     }
 
-    public static Exported.Tour GenerateTour(GenerateTourOptions generateTourOptions)
-    {
-        var folderPath = generateTourOptions.FolderPath;
-        var resourceHandlePath = generateTourOptions.ResourceHandlePath;
-        // Find first state
-        if (Tour.Instance == null)
-        {
-            EditorUtility.DisplayDialog("Error", "There is no tour object on this scene!", "Ok");
-            return null;
-        }
 
+    public static Exported.Tour GenerateTour(string folderPath, GenerateTourOptions generateTourOptions)
+    {
         State firstState = Tour.Instance.firstState;
         if (firstState == null)
         {
@@ -111,7 +128,12 @@ internal class TourExporter
 
             try
             {
-                if (!TryHandleState(state, folderPath, resourceHandlePath, generateTourOptions.ImageCroppingLevel, out var exportedState))
+                if (!TryHandleState(
+                    state,
+                    folderPath,
+                    generateTourOptions.ResourceHandlePath,
+                    generateTourOptions.ImageCroppingLevel,
+                    out var exportedState))
                 {
                     EditorUtility.DisplayDialog("Error", $"Error while exporting state {state.title}", "Ok");
                     return null;
@@ -167,7 +189,7 @@ internal class TourExporter
             .Select(path => (path, lineEnd: Regex.Match(path, @"client.js(?<name>.+|)$").Groups["name"].Value))
             .Select(pair => (source: pair.path, target: Path.Combine(Path.GetDirectoryName(pair.path), $"{tourHash}.js{pair.lineEnd}")))
             .ToArray();
-        foreach (var (source,target) in renamePatterns)
+        foreach (var (source, target) in renamePatterns)
         {
             File.Move(source, target);
         }
@@ -403,7 +425,7 @@ internal class TourExporter
 
     public static void UnpackViewer(WebViewerBuildPack viewer, string folderPath)
     {
-        using (var fileStream = File.OpenRead(viewer.Location))
+        using (var fileStream = File.OpenRead(viewer.ArchiveLocation))
         using (var zipInputStream = new ZipInputStream(fileStream))
         {
             while (zipInputStream.GetNextEntry() is ZipEntry zipEntry)
@@ -426,6 +448,16 @@ internal class TourExporter
                     StreamUtils.Copy(zipInputStream, streamWriter, buffer);
                 }
             }
+        }
+    }
+
+    private static void UnpackDesktopClient(DesktopClientBuildPack desktopClientBuildPack, string folderPath)
+    {
+        foreach (var file in Directory
+            .GetFiles(desktopClientBuildPack.FolderLocation)
+            .Where(f => !f.EndsWith(".meta")))
+        {
+            File.Copy(file, Path.Combine(folderPath, Path.GetFileName(file)));
         }
     }
 

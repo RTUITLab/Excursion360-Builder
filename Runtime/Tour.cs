@@ -28,7 +28,7 @@ public class Tour : MonoBehaviour
     private static Tour _instance;
 
     public string title = ">>place tour name here<<";
-    
+
     public State firstState;
 
     public ConnectionMarker connectionMarkerPrefab;
@@ -50,12 +50,40 @@ public class Tour : MonoBehaviour
     [HideInInspector]
     public string id = Guid.NewGuid().ToString();
     /// <summary>
-    /// Used for saving buikld location between editor runs
+    /// Used for saving build location between editor runs
     /// </summary>
     [HideInInspector]
     public string targetBuildLocation;
-
+    /// <summary>
+    /// Used for saving cropping level between editor runs
+    /// </summary>
+    [HideInInspector]
+    public int croppingLevel = 6;
     private void OnValidate()
+    {
+        ValidateTexture();
+        ValidateTitle();
+
+    }
+
+    private void ValidateTitle()
+    {
+        if (string.IsNullOrEmpty(title))
+        {
+            return;
+        }
+        try
+        {
+            System.IO.Path.GetFullPath(title);
+        }
+        catch
+        {
+            title = "";
+            EditorUtility.DisplayDialog("Incorrect title", $"Title >>{title}<< must be OK for folder name", "Ok");
+        }
+    }
+
+    private void ValidateTexture()
     {
         if (!logoTexture)
         {
@@ -67,9 +95,9 @@ public class Tour : MonoBehaviour
         {
             return;
         }
-
         EditorUtility.DisplayDialog("Incorrect logo", "You must use svg icon", "Ok");
         logoTexture = default;
+        return;
     }
 
     public VideoPlayerPool videoPlayerPool
