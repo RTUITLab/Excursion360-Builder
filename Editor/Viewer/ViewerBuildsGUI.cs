@@ -33,10 +33,17 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
         }
         public static BuildPack Draw()
         {
+            EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Download last viewer version"))
             {
-                BackgroundTaskInvoker.StartBackgroundTask(DownloadViewer(packsLocation));
+                BackgroundTaskInvoker.StartBackgroundTask(DownloadViewer(packsLocation, ReleaseType.OnlyStable));
             }
+            if (GUILayout.Button("pre-release"))
+            {
+                BackgroundTaskInvoker.StartBackgroundTask(DownloadViewer(packsLocation, ReleaseType.WithPreRelease));
+            }
+            EditorGUILayout.EndHorizontal();
+
             GUILayout.BeginHorizontal();
             GUILayout.Label("Available viewers", EditorStyles.boldLabel);
             if (GUILayout.Button("Refresh"))
@@ -89,7 +96,8 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                 .FirstOrDefault()
                 .i;
         }
-        private static IEnumerator DownloadViewer(string folderPath)
+        enum ReleaseType { OnlyStable, WithPreRelease }
+        private static IEnumerator DownloadViewer(string folderPath, ReleaseType releaseType)
         {
             EditorUtility.DisplayProgressBar("Downloading", "Downloading latest viewer", 0);
             try
@@ -97,7 +105,7 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                 ReleaseResponse parsed = null;
                 string errorMessage = null;
                 var downloadingTask = DownloadReleaseInfo(
-                    "latest",
+                    releaseType == ReleaseType.WithPreRelease ? "?per_page=1" : "/latest",
                     r => parsed = r,
                     e => errorMessage = e);
                 while (downloadingTask.MoveNext())
@@ -136,15 +144,15 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
             }
         }
         private static IEnumerator DownloadReleaseInfo(int releaseId, Action<ReleaseResponse> done, Action<string> error)
-           => DownloadReleaseInfo(releaseId.ToString(), done, error);
+           => DownloadReleaseInfo("/" + releaseId.ToString(), done, error);
         private static IEnumerator DownloadReleaseInfo(string releaseId,
             Action<ReleaseResponse> done,
             Action<string> error)
         {
             try
             {
-                string row;
-                using (UnityWebRequest w = UnityWebRequest.Get("https://api.github.com/repos/RTUITLab/Excursion360-Web/releases/" + releaseId))
+                string raw;
+                using (UnityWebRequest w = UnityWebRequest.Get("https://api.github.com/repos/RTUITLab/Excursion360-Web/releases" + releaseId))
                 {
                     w.SetRequestHeader("User-Agent", "Mozilla/5.0");
                     yield return w.SendWebRequest();
@@ -154,15 +162,28 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                         yield return null;
                         EditorUtility.DisplayProgressBar("Downloading", $"Fetching release information {releaseId}", w.downloadProgress);
                     }
-                    row = w.downloadHandler.text;
+                    raw = w.downloadHandler.text;
                     if (w.isHttpError)
                     {
-                        error(row);
+                        error(raw);
                         yield break;
                     }
                 }
-                var parsed = JsonUtility.FromJson<ReleaseResponse>(row);
-                done(parsed);
+                try
+                {
+                    var parsed = JsonUtility.FromJson<ReleaseResponse>(raw);
+                    done(parsed);
+                }
+                catch (ArgumentException)
+                {
+                    raw = $"{{\"items\": {raw}}}";// wrap array into object
+                    var parsed = JsonUtility.FromJson<Wrapper<ReleaseResponse>>(raw).items[0];
+                    done(parsed);
+                }
+                catch (Exception ex)
+                {
+                    error(ex.Message);
+                }
             }
             finally
             {
@@ -202,6 +223,15 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
             }
             EditorGUI.indentLevel--;
         }
-
+        /// <summary>
+        /// Used for deserialize JSON array
+        /// </summary>
+        /// <typeparam name="T">types of object in array</typeparam>
+        [Serializable]
+        private class Wrapper<T>
+        {
+            public T[] items;
+        }
     }
+    
 }

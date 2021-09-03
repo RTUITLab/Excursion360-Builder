@@ -126,7 +126,7 @@ public class TourExporter
 
             UpdateProcess(i + 1, states.Length, "Exporting", $"{i + 1}/{states.Length}: {state.title}");
         }
-        PatchViewer(folderPath, tour.title);
+        PatchViewer(folderPath, tour);
         return tour;
     }
     /// <summary>
@@ -134,11 +134,10 @@ public class TourExporter
     /// </summary>
     /// <param name="folderPath">Folder of viewer with target files and viewer</param>
     /// <param name="title">Title of tour</param>
-    private static void PatchViewer(string folderPath, string title)
+    private static void PatchViewer(string folderPath, Exported.Tour tour)
     {
         var indexFileName = "index.html";
-        //var titleTemplate = "%TITLE_TEMPLATE%";
-        var titleTemplate = "360";
+        var titleTemplate = "%TITLE_TEMPLATE%";
 
         var indexFile = Path.Combine(folderPath, indexFileName);
         if (!File.Exists(indexFile))
@@ -149,12 +148,13 @@ public class TourExporter
         var indexFileContent = File.ReadAllText(indexFile);
         if (indexFileContent.Contains(titleTemplate))
         {
-            indexFileContent = indexFileContent.Replace(titleTemplate, title);
+            indexFileContent = indexFileContent.Replace(titleTemplate, tour.title);
         }
         else
         {
             Debug.LogWarning($"Can't find title template {titleTemplate} in index file. Please, use latest viewer.");
         }
+
         File.WriteAllText(indexFile, indexFileContent);
     }
 
