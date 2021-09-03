@@ -1,5 +1,5 @@
 ﻿using Packages.Excursion360_Builder.Editor.Viewer;
-using Packages.Excursion360_Builder.Editor.WebBuild;
+using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using Packages.tour_creator.Editor.WebBuild;
 using System;
 using System.Collections.Concurrent;
@@ -19,7 +19,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
     {
         private bool isDotNetInstalled;
         private Process previewBackendProcess;
-        private BuildPack selectedBuildPack;
+        private WebViewerBuildPack selectedBuildPack;
         private string ProjectFolder =>
             Path.GetFullPath("Packages/com.rexagon.tour-creator/.LiveViewer/Excursion360-Builder");
         private string ProjectVersionFile =>

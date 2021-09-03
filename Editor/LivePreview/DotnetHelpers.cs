@@ -4,13 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Packages.Excursion360_Builder.Editor.WebBuild;
+using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace Packages.Excursion360_Builder.Editor.LivePreview
 {
-    public class DotnetHelpers
+    internal class DotnetHelpers
     {
         public static bool CheckDotNetInstalled()
         {
@@ -47,7 +47,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         public static void BuildLivePreviewBackend(
             string projectFolder,
             string outputFolder,
-            BuildPack selectedBuildPack)
+            WebViewerBuildPack selectedBuildPack)
         {
             try
             {

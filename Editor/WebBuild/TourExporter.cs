@@ -10,14 +10,15 @@ using Packages.tour_creator.Editor.WebBuild;
 using Excursion360_Builder.Shared.States.Items.Field;
 using Packages.Excursion360_Builder.Editor.WebBuild;
 using System.Text.RegularExpressions;
+using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 
 #if UNITY_EDITOR
 using UnityEditor;
 using Exported = Packages.tour_creator.Editor.Protocol;
 
-public class TourExporter
+internal class TourExporter
 {
-    public class GenerateTourOptions
+    internal class GenerateTourOptions
     {
         public string FolderPath { get; private set; }
         public ResourceHandlePath ResourceHandlePath { get; private set; }
@@ -33,11 +34,11 @@ public class TourExporter
             return new GenerateTourOptions(targetFolderPath, ResourceHandlePath.PublishPath, 0);
         }
     }
-    public class ExportOptions : GenerateTourOptions
+    internal class ExportOptions : GenerateTourOptions
     {
-        public BuildPack ViewerPack { get; private set; }
+        public WebViewerBuildPack ViewerPack { get; private set; }
 
-        public ExportOptions(BuildPack viewerPack, string targetFolderPath, int imageCroppingLevel) : base(targetFolderPath, ResourceHandlePath.CopyToDist, imageCroppingLevel)
+        public ExportOptions(WebViewerBuildPack viewerPack, string targetFolderPath, int imageCroppingLevel) : base(targetFolderPath, ResourceHandlePath.CopyToDist, imageCroppingLevel)
         {
             ViewerPack = viewerPack;
         }
@@ -400,7 +401,7 @@ public class TourExporter
         return true;
     }
 
-    public static void UnpackViewer(BuildPack viewer, string folderPath)
+    public static void UnpackViewer(WebViewerBuildPack viewer, string folderPath)
     {
         using (var fileStream = File.OpenRead(viewer.Location))
         using (var zipInputStream = new ZipInputStream(fileStream))

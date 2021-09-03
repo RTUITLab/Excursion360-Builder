@@ -1,4 +1,5 @@
 ﻿using Packages.Excursion360_Builder.Editor.WebBuild;
+using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using Packages.tour_creator.Editor.WebBuild.GitHubAPI;
 using System;
 using System.Collections;
@@ -14,16 +15,16 @@ using UnityEngine.Networking;
 
 namespace Packages.Excursion360_Builder.Editor.Viewer
 {
-    class ViewerBuildsGUI
+    internal static class ViewerBuildsGUI
     {
         private static string packsLocation;
-        private static List<BuildPack> buildPacks = new List<BuildPack>();
+        private static List<WebViewerBuildPack> buildPacks = new List<WebViewerBuildPack>();
         private static string[] buildPackTags = Array.Empty<string>();
         private static int selectedbuildTagNum = 0;
 
         static ViewerBuildsGUI()
         {
-            packsLocation = Application.dataPath + "/Tour creator";
+            packsLocation = Path.Combine(Application.dataPath, "Tour creator", "viewers");
             if (!Directory.Exists(packsLocation))
             {
                 Directory.CreateDirectory(packsLocation);
@@ -31,7 +32,7 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
             FindBuildPacks();
             selectedbuildTagNum = buildPacks.Count - 1;
         }
-        public static BuildPack Draw()
+        public static WebViewerBuildPack Draw()
         {
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Download last viewer version"))
@@ -82,7 +83,7 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
         {
             buildPacks = Directory.GetFiles(packsLocation, "web-viewer-*-*.zip")
                 .Select(path => (path, match: Regex.Match(path, @"web-viewer-(?<tag>\S+)-(?<id>\d+).zip")))
-                .Select(b => new BuildPack
+                .Select(b => new WebViewerBuildPack
                 {
                     Id = int.Parse(b.match.Groups["id"].Value),
                     Version = b.match.Groups["tag"].Value,
@@ -190,7 +191,7 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                 EditorUtility.ClearProgressBar();
             }
         }
-        private static void RenderPack(BuildPack pack)
+        private static void RenderPack(WebViewerBuildPack pack)
         {
             EditorGUI.indentLevel++;
             switch (pack.Status)

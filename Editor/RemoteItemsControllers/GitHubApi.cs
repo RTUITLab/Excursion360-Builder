@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Packages.Excursion360_Builder.Editor.Viewer
+namespace Packages.Excursion360_Builder.Editor.RemoteItemsControllers
 {
-    class ViewerBuildManager
+    class GitHubApi
     {
-    }   
+
+    }
 }

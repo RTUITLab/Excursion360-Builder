@@ -1,6 +1,7 @@
 ﻿using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using Packages.Excursion360_Builder.Editor.Viewer;
+using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using Packages.tour_creator.Editor.WebBuild;
 using Packages.tour_creator.Editor.WebBuild.GitHubAPI;
 using System;
@@ -17,7 +18,7 @@ using UnityEngine.Networking;
 
 namespace Packages.Excursion360_Builder.Editor.WebBuild
 {
-    class BuildPacksManagerWindow : EditorWindow
+    class BuildExcursionWindow : EditorWindow
     {
         private string outFolderPath;
         private int imageCroppingLevel = 6;
@@ -29,18 +30,27 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
 
         private void OnGUI()
         {
+            EditorGUILayout.LabelField("Select Viewer", EditorStyles.boldLabel);
             var selectedViewer = ViewerBuildsGUI.Draw();
             if (selectedViewer == null)
             {
                 return;
             }
+
             EditorGUILayout.Space();
-            DrawExportingSection(selectedViewer);
+            EditorGUILayout.LabelField("Exporting excursion", EditorStyles.boldLabel);
+            DrawExportingSection();
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Place desktop viewer", EditorStyles.boldLabel);
+            DesktopClientBuildsGUI.Draw();
+
+            EditorGUILayout.Space();
+            DrawExportButton(selectedViewer);
         }
 
-        private void DrawExportingSection(BuildPack selectedViewer)
+        private void DrawExportingSection()
         {
-            EditorGUILayout.LabelField("Exporting excursion", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PrefixLabel("Target path");
             outFolderPath = EditorGUILayout.TextField(outFolderPath);
@@ -57,13 +67,18 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
             }
             EditorGUILayout.EndHorizontal();
             imageCroppingLevel = EditorGUILayout.IntSlider("Image cropping level", imageCroppingLevel, ImageCropper.MIN_PARTS_COUNT, ImageCropper.MAX_PARTS_COUNT);
+            
+        }
+
+        private void DrawExportButton(WebViewerBuildPack selectedViewer)
+        {
             if (GUILayout.Button("Export"))
             {
                 if (!TourExporter.TryGetTargetFolder(outFolderPath))
                 {
                     return;
                 }
-                TourExporter.ExportTour(new TourExporter.ExportOptions(selectedViewer, outFolderPath, imageCroppingLevel ));
+                TourExporter.ExportTour(new TourExporter.ExportOptions(selectedViewer, outFolderPath, imageCroppingLevel));
             }
         }
     }
