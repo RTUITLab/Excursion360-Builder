@@ -21,6 +21,12 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
     {
         private string outFolderPath;
         private int imageCroppingLevel = 6;
+
+        private void OnEnable()
+        {
+            outFolderPath = Tour.Instance != null ? Tour.Instance.targetBuildLocation : null;
+        }
+
         private void OnGUI()
         {
             var selectedViewer = ViewerBuildsGUI.Draw();
@@ -41,6 +47,11 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
             if (GUILayout.Button("..."))
             {
                 outFolderPath = EditorUtility.OpenFolderPanel("Select folder to export", outFolderPath, "");
+                if (Tour.Instance != null)
+                {
+                    Tour.Instance.targetBuildLocation = outFolderPath;
+                    EditorUtility.SetDirty(Tour.Instance);
+                }
                 Repaint();
                 SceneView.RepaintAll();
             }

@@ -29,6 +29,7 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                 Directory.CreateDirectory(packsLocation);
             }
             FindBuildPacks();
+            selectedbuildTagNum = buildPacks.Count - 1;
         }
         public static BuildPack Draw()
         {

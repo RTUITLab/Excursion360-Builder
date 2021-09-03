@@ -27,6 +27,8 @@ public class Tour : MonoBehaviour
 
     private static Tour _instance;
 
+    public string title = ">>place tour name here<<";
+    
     public State firstState;
 
     public ConnectionMarker connectionMarkerPrefab;
@@ -36,6 +38,22 @@ public class Tour : MonoBehaviour
     public Texture defaultTexture;
     [Tooltip("Use SVG icon")]
     public DefaultAsset logoTexture;
+
+    /// <summary>
+    /// Unique index of build
+    /// </summary>
+    [HideInInspector]
+    public int versionNum;
+    /// <summary>
+    /// Unique id of each tour
+    /// </summary>
+    [HideInInspector]
+    public string id = Guid.NewGuid().ToString();
+    /// <summary>
+    /// Used for saving buikld location between editor runs
+    /// </summary>
+    [HideInInspector]
+    public string targetBuildLocation;
 
     private void OnValidate()
     {

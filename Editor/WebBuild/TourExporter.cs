@@ -98,7 +98,7 @@ public class TourExporter
             return null;
         }
 
-        Exported.Tour tour = PrepateTour(firstState);
+        Exported.Tour tour = PrepateTour(Tour.Instance);
         Debug.Log($"Found {states.Length} states");
         // Pre process states
         UpdateProcess(0, states.Length, "Exporting", "");
@@ -126,17 +126,51 @@ public class TourExporter
 
             UpdateProcess(i + 1, states.Length, "Exporting", $"{i + 1}/{states.Length}: {state.title}");
         }
-
+        PatchViewer(folderPath, tour.title);
         return tour;
     }
-
-    private static Exported.Tour PrepateTour(State firstState)
+    /// <summary>
+    /// Apply tour title and hash
+    /// </summary>
+    /// <param name="folderPath">Folder of viewer with target files and viewer</param>
+    /// <param name="title">Title of tour</param>
+    private static void PatchViewer(string folderPath, string title)
     {
+        var indexFileName = "index.html";
+        //var titleTemplate = "%TITLE_TEMPLATE%";
+        var titleTemplate = "360";
+
+        var indexFile = Path.Combine(folderPath, indexFileName);
+        if (!File.Exists(indexFile))
+        {
+            Debug.LogWarning($"Can't find {indexFileName} at {folderPath} for patching");
+            return;
+        }
+        var indexFileContent = File.ReadAllText(indexFile);
+        if (indexFileContent.Contains(titleTemplate))
+        {
+            indexFileContent = indexFileContent.Replace(titleTemplate, title);
+        }
+        else
+        {
+            Debug.LogWarning($"Can't find title template {titleTemplate} in index file. Please, use latest viewer.");
+        }
+        File.WriteAllText(indexFile, indexFileContent);
+    }
+
+    private static Exported.Tour PrepateTour(Tour tour)
+    {
+        tour.versionNum++;
+        EditorUtility.SetDirty(tour);
         return new Exported.Tour
         {
+            id = tour.id,
+            title = tour.title,
+            BuildTime = DateTimeOffset.Now,
+            versionNum = tour.versionNum,
             tourProtocolVersion = "v0.9",
-            firstStateId = firstState.GetExportedId(),
-            colorSchemes = Tour.Instance.colorSchemes.Select(cs => cs.color).ToArray(),
+            firstStateId = tour.firstState.GetExportedId(),
+            colorSchemes = tour.colorSchemes.Select(cs => cs.color).ToArray(),
             states = new List<Exported.State>(),
         };
     }
@@ -225,14 +259,14 @@ public class TourExporter
                     .ToArray(),
                 text = fieldItem.text,
                 audios = fieldItem.audios.Select((audio, i) => new Exported.FieldItemAudioContent
-                    {
-                        src = ExportResource(
+                {
+                    src = ExportResource(
                             audio,
                             folderPath,
                             $"{fieldItem.GetExportedId()}_{i}",
                             resourceHandlePath),
-                        duration = audio.length
-                    })
+                    duration = audio.length
+                })
                     .ToArray()
             });
         }
