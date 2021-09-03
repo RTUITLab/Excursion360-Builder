@@ -9,6 +9,7 @@ using ICSharpCode.SharpZipLib.Core;
 using Packages.tour_creator.Editor.WebBuild;
 using Excursion360_Builder.Shared.States.Items.Field;
 using Packages.Excursion360_Builder.Editor.WebBuild;
+using System.Text.RegularExpressions;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -154,8 +155,22 @@ public class TourExporter
         {
             Debug.LogWarning($"Can't find title template {titleTemplate} in index file. Please, use latest viewer.");
         }
-
+        PatchJsFile(folderPath, $"{tour.id}-{tour.versionNum}", ref indexFileContent);
         File.WriteAllText(indexFile, indexFileContent);
+    }
+
+    private static void PatchJsFile(string folderPath, string tourHash, ref string indexFileContent)
+    {
+        var jsLinkedFiles = Directory.GetFiles(folderPath, "client.js*");
+        var renamePatterns = jsLinkedFiles
+            .Select(path => (path, lineEnd: Regex.Match(path, @"client.js(?<name>.+|)$").Groups["name"].Value))
+            .Select(pair => (source: pair.path, target: Path.Combine(Path.GetDirectoryName(pair.path), $"{tourHash}.js{pair.lineEnd}")))
+            .ToArray();
+        foreach (var (source,target) in renamePatterns)
+        {
+            File.Move(source, target);
+        }
+        indexFileContent = indexFileContent.Replace("client.js", $"{tourHash}.js");
     }
 
     private static Exported.Tour PrepateTour(Tour tour)

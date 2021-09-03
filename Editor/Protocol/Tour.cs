@@ -20,6 +20,8 @@ namespace Packages.tour_creator.Editor.Protocol
         }
         [SerializeField]
         private string buildTime;
+
+
         public int versionNum;
         public string tourProtocolVersion;
 
