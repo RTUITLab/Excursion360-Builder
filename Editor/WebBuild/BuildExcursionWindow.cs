@@ -24,33 +24,65 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
         private string outFolderPath;
         private int imageCroppingLevel;
 
+        private bool showAdditional;
+        private bool showViewerSelecting;
+        private bool showDesktopClientSelecting;
+
+        private WebViewerBuildPack selectedViewer;
+        private DesktopClientBuildPack selectedDesktopClient;
+
+        private DesktopClientBuildsGUI desktopClientBuildsGUI = new DesktopClientBuildsGUI();
+        private ViewerBuildsGUI viewerBuildsGUI = new ViewerBuildsGUI();
+
         private void OnEnable()
         {
-            outFolderPath = Tour.Instance != null ? Tour.Instance.targetBuildLocation : null;
-            imageCroppingLevel = Tour.Instance != null ? Tour.Instance.croppingLevel : 6;
+            outFolderPath = ProjectEditorPrefs.BuildLocation;
+            imageCroppingLevel = ProjectEditorPrefs.ImageCroppingLevel;
+            desktopClientBuildsGUI.Initialize();
+            viewerBuildsGUI.Initialize();
         }
 
         private void OnGUI()
         {
-            EditorGUILayout.LabelField("Select Viewer", EditorStyles.boldLabel);
-            var selectedViewer = ViewerBuildsGUI.Draw();
-            if (selectedViewer == null)
+            DrawBuildGUI();
+            DrawAdditionalData();
+        }
+
+        private void DrawAdditionalData()
+        {
+            showAdditional = EditorGUILayout.Foldout(showAdditional, "Additional info");
+            if (showAdditional)
             {
-                return;
+                EditorGUI.indentLevel++;
+                EditorGUILayout.LabelField("Project id", ProjectEditorPrefs.ProjectId);
+                EditorGUILayout.LabelField("Build num", ProjectEditorPrefs.BuildNum.ToString());
+                EditorGUI.indentLevel--;
+            }
+
+        }
+
+        private void DrawBuildGUI()
+        {
+            selectedViewer = viewerBuildsGUI.CurrentPack;
+            showViewerSelecting = EditorGUILayout.Foldout(showViewerSelecting, $"Viewer: {selectedViewer?.Version ?? "NOT SELECTED"}");
+            if (showViewerSelecting)
+            {
+                EditorGUI.indentLevel++;
+                viewerBuildsGUI.Draw();
+                EditorGUI.indentLevel--;
+            }
+            selectedDesktopClient = desktopClientBuildsGUI.CurrentPack;
+            showDesktopClientSelecting = EditorGUILayout.Foldout(showDesktopClientSelecting, $"Desktop client: {selectedDesktopClient?.Version ?? "NOT SELECTED"}");
+            if (showDesktopClientSelecting)
+            {
+                EditorGUI.indentLevel++;
+                desktopClientBuildsGUI.Draw();
+                EditorGUI.indentLevel--;
             }
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Exporting excursion", EditorStyles.boldLabel);
             DrawExportingSection();
-
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Place desktop viewer", EditorStyles.boldLabel);
-            var selectedDesktopClient = DesktopClientBuildsGUI.Draw();
-
-            if (selectedDesktopClient == null)
-            {
-                return;
-            }
 
             EditorGUILayout.Space();
             DrawExportButton(selectedViewer, selectedDesktopClient);
@@ -63,12 +95,17 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
             outFolderPath = EditorGUILayout.TextField(outFolderPath);
             if (GUILayout.Button("..."))
             {
-                outFolderPath = EditorUtility.OpenFolderPanel("Select folder to export", outFolderPath, "");
-                if (Tour.Instance != null)
+                var newOutFolderPath = EditorUtility.OpenFolderPanel("Select folder to export", outFolderPath, "");
+                if (string.IsNullOrEmpty(newOutFolderPath) && !string.IsNullOrEmpty(outFolderPath))
                 {
-                    Tour.Instance.targetBuildLocation = outFolderPath;
-                    EditorUtility.SetDirty(Tour.Instance);
+                    newOutFolderPath = outFolderPath;
                 }
+                if (newOutFolderPath != outFolderPath)
+                {
+                    outFolderPath = newOutFolderPath;
+                    ProjectEditorPrefs.BuildLocation = outFolderPath;
+                }
+
                 Repaint();
                 SceneView.RepaintAll();
             }
@@ -77,8 +114,7 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
             if (newImageCroppingLevel != imageCroppingLevel)
             {
                 imageCroppingLevel = newImageCroppingLevel;
-                Tour.Instance.croppingLevel = imageCroppingLevel;
-                EditorUtility.SetDirty(Tour.Instance);
+                ProjectEditorPrefs.ImageCroppingLevel = imageCroppingLevel;
             }
 
         }
@@ -87,6 +123,11 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
         {
             if (GUILayout.Button("Export"))
             {
+                if (selectedViewer == null || selectedDesktopClient == null)
+                {
+                    EditorUtility.DisplayDialog("Error", $"Please, select viewer and desktop client versions", "Ok");
+                    return;
+                }
                 if (!TourExporter.TryGetTargetFolder(outFolderPath))
                 {
                     return;

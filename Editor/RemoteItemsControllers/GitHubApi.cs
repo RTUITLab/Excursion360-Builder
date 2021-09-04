@@ -19,7 +19,7 @@ namespace Packages.Excursion360_Builder.Editor.RemoteItemsControllers
             Action<ReleaseResponse> done,
             Action<string> error)
         {
-            var releaseRequest = DownloadReleaseInfo(releaseType == ReleaseType.WithPreRelease ? "?per_page=1" : "/latest", repo, done, error);
+            var releaseRequest = DownloadReleaseInfo(releaseType == ReleaseType.PreRelease ? "?per_page=1" : "/latest", repo, done, error);
             while (releaseRequest.MoveNext())
             {
                 yield return releaseRequest.Current;

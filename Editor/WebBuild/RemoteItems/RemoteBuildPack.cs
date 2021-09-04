@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems
 {
-    class RemoteBuildPack
+    internal abstract class RemoteBuildPack
     {
         /// <summary>
         /// Release ig on github

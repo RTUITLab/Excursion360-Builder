@@ -20,6 +20,10 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         private bool isDotNetInstalled;
         private Process previewBackendProcess;
         private WebViewerBuildPack selectedBuildPack;
+
+        private ViewerBuildsGUI viewerBuildsGUI = new ViewerBuildsGUI();
+
+
         private string ProjectFolder =>
             Path.GetFullPath("Packages/com.rexagon.tour-creator/.LiveViewer/Excursion360-Builder");
         private string ProjectVersionFile =>
@@ -79,6 +83,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         private void OnEnable()
         {
             isDotNetInstalled = DotnetHelpers.CheckDotNetInstalled();
+            viewerBuildsGUI.Initialize();
         }
 
         private void OnGUI()
@@ -94,8 +99,8 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 DrawInstallDotNetMessage();
                 return;
             }
-
-            selectedBuildPack = ViewerBuildsGUI.Draw();
+            viewerBuildsGUI.Draw();
+            selectedBuildPack = viewerBuildsGUI.CurrentPack;
 
             if (!File.Exists(GetExecutablePath()))
             {

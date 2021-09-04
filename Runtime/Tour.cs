@@ -39,26 +39,6 @@ public class Tour : MonoBehaviour
     [Tooltip("Use SVG icon")]
     public DefaultAsset logoTexture;
 
-    /// <summary>
-    /// Unique index of build
-    /// </summary>
-    [HideInInspector]
-    public int versionNum;
-    /// <summary>
-    /// Unique id of each tour
-    /// </summary>
-    [HideInInspector]
-    public string id = Guid.NewGuid().ToString();
-    /// <summary>
-    /// Used for saving build location between editor runs
-    /// </summary>
-    [HideInInspector]
-    public string targetBuildLocation;
-    /// <summary>
-    /// Used for saving cropping level between editor runs
-    /// </summary>
-    [HideInInspector]
-    public int croppingLevel = 6;
     private void OnValidate()
     {
         ValidateTexture();
@@ -68,7 +48,7 @@ public class Tour : MonoBehaviour
 
     private void ValidateTitle()
     {
-        if (string.IsNullOrEmpty(title))
+        if (string.IsNullOrWhiteSpace(title))
         {
             return;
         }

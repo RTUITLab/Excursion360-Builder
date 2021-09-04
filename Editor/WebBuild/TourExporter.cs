@@ -11,6 +11,7 @@ using Excursion360_Builder.Shared.States.Items.Field;
 using Packages.Excursion360_Builder.Editor.WebBuild;
 using System.Text.RegularExpressions;
 using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
+using Packages.Excursion360_Builder.Editor;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -198,14 +199,13 @@ internal class TourExporter
 
     private static Exported.Tour PrepateTour(Tour tour)
     {
-        tour.versionNum++;
         EditorUtility.SetDirty(tour);
         return new Exported.Tour
         {
-            id = tour.id,
+            id = ProjectEditorPrefs.ProjectId,
             title = tour.title,
             BuildTime = DateTimeOffset.Now,
-            versionNum = tour.versionNum,
+            versionNum = ProjectEditorPrefs.IncrementBuildNum(),
             tourProtocolVersion = "v0.9",
             firstStateId = tour.firstState.GetExportedId(),
             colorSchemes = tour.colorSchemes.Select(cs => cs.color).ToArray(),

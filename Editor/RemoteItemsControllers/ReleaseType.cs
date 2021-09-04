@@ -8,7 +8,7 @@ namespace Packages.Excursion360_Builder.Editor.RemoteItemsControllers
 {
     internal enum ReleaseType
     {
-        OnlyStable,
-        WithPreRelease
+        Stable,
+        PreRelease
     }
 }
