@@ -1,4 +1,5 @@
-﻿using Packages.tour_creator.Editor.WebBuild.GitHubAPI;
+﻿using Packages.Excursion360_Builder.Editor.HTTP;
+using Packages.tour_creator.Editor.WebBuild.GitHubAPI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace Packages.Excursion360_Builder.Editor.RemoteItemsControllers
             try
             {
                 var getRequest =
-                InvokeGetRequest(
+                HttpHelper.InvokeGetRequest(
                     $"https://api.github.com/repos/RTUITLab/{repo}/releases{postfix}",
                     $"Fetching {repo} release information",
                     handler =>
@@ -64,34 +65,6 @@ namespace Packages.Excursion360_Builder.Editor.RemoteItemsControllers
                 while (getRequest.MoveNext())
                 {
                     yield return getRequest.Current;
-                }
-            }
-            finally
-            {
-                EditorUtility.ClearProgressBar();
-            }
-        }
-
-        public static IEnumerator InvokeGetRequest(string url, string infoMessage, Action<DownloadHandler> done, Action<string> error)
-        {
-            try
-            {
-                using (UnityWebRequest w = UnityWebRequest.Get(url))
-                {
-                    w.SetRequestHeader("User-Agent", "Mozilla/5.0");
-                    yield return w.SendWebRequest();
-                    EditorUtility.DisplayProgressBar("Downloading", infoMessage, 0f);
-                    while (w.isDone == false)
-                    {
-                        yield return null;
-                        EditorUtility.DisplayProgressBar("Downloading", infoMessage, w.downloadProgress);
-                    }
-                    if (w.isHttpError)
-                    {
-                        error(w.downloadHandler.text);
-                        yield break;
-                    }
-                    done(w.downloadHandler);
                 }
             }
             finally

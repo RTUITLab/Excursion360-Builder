@@ -4,6 +4,7 @@ using Packages.tour_creator.Editor;
 using Packages.Excursion360_Builder.Editor.WebBuild;
 using Packages.Excursion360_Builder.Editor.SceneRenderers;
 using System;
+using Packages.Excursion360_Builder.Editor.SpellCheck;
 
 #if UNITY_EDITOR
 using Packages.Excursion360_Builder.Editor.LivePreview;
@@ -43,6 +44,9 @@ public class TourEditor
     private const string MENU_ITEM_BUILD_DESKTOP = GROUP_NAME + "/Build For Desktop (TODO)";
     private const string MENU_ITEM_BUILD_ANDROID = GROUP_NAME + "/Build For Android (TODO)";
     private const string MENU_ITEM_BUILD_WEB = GROUP_NAME + "/Build tour";
+    
+    
+    private const string MENU_ITEM_SPELL_CHECK = GROUP_NAME + "/Spell check";
 
     private static bool _areConnectionsVisible;
     private static bool _areLabelsVisible;
@@ -132,6 +136,13 @@ public class TourEditor
     private static void MenuItemToggleShowItems()
     {
         SetItemsVisible(!_areItemsVisible);
+    }
+
+
+    [MenuItem(MENU_ITEM_SPELL_CHECK, false, 30)]
+    private static void MenuItemOpenSpellCheck()
+    {
+        EditorWindow.GetWindow<SpellCheckWindow>("Spell check");
     }
 
     //[MenuItem(MENU_ITEM_BUILD_DESKTOP, false, 40)]

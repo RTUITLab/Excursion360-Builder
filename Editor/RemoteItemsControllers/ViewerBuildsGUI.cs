@@ -1,4 +1,5 @@
-﻿using Packages.Excursion360_Builder.Editor.RemoteItemsControllers;
+﻿using Packages.Excursion360_Builder.Editor.HTTP;
+using Packages.Excursion360_Builder.Editor.RemoteItemsControllers;
 using Packages.Excursion360_Builder.Editor.WebBuild;
 using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using Packages.tour_creator.Editor.WebBuild.GitHubAPI;
@@ -48,7 +49,7 @@ namespace Packages.Excursion360_Builder.Editor.Viewer
                 errorAction("No needed asset in latest release");
                 yield break;
             }
-            var downloadRequest = GitHubApi.InvokeGetRequest(targetLink.browser_download_url, $"Downloading {targetLink.name}",
+            var downloadRequest = HttpHelper.InvokeGetRequest(targetLink.browser_download_url, $"Downloading {targetLink.name}",
                     handler =>
                     {
                         File.WriteAllBytes(Path.Combine(rootLocation, $"web-viewer-{release.tag_name}-{release.id}.zip"), handler.data);
