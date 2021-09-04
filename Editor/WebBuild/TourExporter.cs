@@ -83,7 +83,7 @@ internal class TourExporter
             }
 
             CreateConfigFile(excursionFolder, logoFileName);
-
+            ProjectEditorPrefs.IncrementBuildNum();
             Exported.Tour tour = GenerateTour(excursionFolder, exportOptions);
 
             // Serialize and write
@@ -205,7 +205,7 @@ internal class TourExporter
             id = ProjectEditorPrefs.ProjectId,
             title = tour.title,
             BuildTime = DateTimeOffset.Now,
-            versionNum = ProjectEditorPrefs.IncrementBuildNum(),
+            versionNum = ProjectEditorPrefs.BuildNum,
             tourProtocolVersion = "v0.9",
             firstStateId = tour.firstState.GetExportedId(),
             colorSchemes = tour.colorSchemes.Select(cs => cs.color).ToArray(),
