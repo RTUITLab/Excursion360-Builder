@@ -14,5 +14,17 @@ namespace Packages.Excursion360_Builder.Editor
         {
             return GUILayout.Button(EditorGUIUtility.IconContent("d_TreeEditor.Trash"), GUILayout.Width(30));
         }
+        public static bool Warning()
+        {
+            return GUILayout.Button(EditorGUIUtility.IconContent("Warning"), GUILayout.Width(30));
+        }
+        public static bool Loading()
+        {
+            return GUILayout.Button(EditorGUIUtility.IconContent("Loading"), GUILayout.Width(30));
+        }
+        public static bool Valid()
+        {
+            return GUILayout.Button(EditorGUIUtility.IconContent("d_Valid"), GUILayout.Width(30));
+        }
     }
 }

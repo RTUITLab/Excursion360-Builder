@@ -18,15 +18,18 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
         private static string pathToCacheFile;
         private static ConcurrentDictionary<string, RowResponse[]> cacheDictionary = new ConcurrentDictionary<string, RowResponse[]>();
         private static ConcurrentDictionary<DateTime, (int api, int cache)> apiUsageHistory = new ConcurrentDictionary<DateTime, (int api, int cache)>();
+        private static ConcurrentDictionary<string, object> exceptions = new ConcurrentDictionary<string, object>();
 
         /// <summary>
         /// queue for checing. Key - unique kewy for each editor key, to replace entered text to same key
         /// </summary>
         private static ConcurrentDictionary<string, (string raw, Action notifyCallback)> checkingQueue = new ConcurrentDictionary<string, (string raw, Action notifyCallback)>();
 
+
         public static (int api, int cache) StatsToday => apiUsageHistory.TryGetValue(DateTime.Now.Date, out var stats) ? stats : (0, 0);
 
         private static DateTime lastUpdateTime;
+
         private static TimeSpan updateTime = TimeSpan.FromSeconds(2);
 
         static SpellCheckCache()
@@ -59,15 +62,17 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
 
         private static void UpdateCache()
         {
-            Debug.Log($"{DateTime.Now} UPDATING {string.Join(";", checkingQueue.Select(kvp => $"{kvp.Key}::{kvp.Value.raw}"))}");
             foreach (var queueKey in checkingQueue.Keys)
             {
-                Debug.Log($"removing {queueKey}");
-                if (!checkingQueue.TryRemove(queueKey, out var queuedTask))
+                if (!checkingQueue.TryGetValue(queueKey, out var queuedTask))
                 {
                     continue;
                 }
-                BackgroundTaskInvoker.StartBackgroundTask(InternalHandleRow(queuedTask.raw, queuedTask.notifyCallback));
+                BackgroundTaskInvoker.StartBackgroundTask(InternalHandleRow(queuedTask.raw, () =>
+                {
+                    checkingQueue.TryRemove(queueKey, out _);
+                    queuedTask.notifyCallback();
+                }));
             }
         }
 
@@ -76,11 +81,30 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
             if (cacheDictionary.TryGetValue(row, out var response))
             {
                 IncrementCacheUsage();
-                return response;
+                return response.Where(r => !exceptions.ContainsKey(r.word)).ToArray();
             }
             checkingQueue.AddOrUpdate(key, (row, notifyCallback), (k, o) => (row, notifyCallback));
             return null;
-            
+
+        }
+
+
+        public static string[] GetExceptions()
+        {
+            return exceptions.Keys.OrderBy(k => k).ToArray();
+        }
+
+        public static void AddToExceptions(string exception)
+        {
+            exceptions.TryAdd(exception, null);
+            SaveDataToFile();
+        }
+
+
+        public static void RemoveFromExceptions(string exception)
+        {
+            exceptions.TryRemove(exception, out _);
+            SaveDataToFile();
         }
 
         private static IEnumerator InternalHandleRow(string row, Action notifyAction)
@@ -91,13 +115,13 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
                 notifyAction();
                 yield break;
             }
-            IncrementApiUsage();
             var spellCheckRequest = YandexSpellCheckApi.GetResultForRow(row, results =>
             {
+                IncrementApiUsage();
                 cacheDictionary.AddOrUpdate(row, results, (key, old) => results);
                 SaveDataToFile();
                 notifyAction();
-            }); 
+            });
             while (spellCheckRequest.MoveNext())
             {
                 yield return null;
@@ -106,15 +130,14 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
 
         private static void IncrementApiUsage()
         {
-            apiUsageHistory.AddOrUpdate(DateTimeOffset.Now.Date, (1, 0), (d, old) => (old .api+ 1, old.cache));
-            SaveDataToFile();
+            apiUsageHistory.AddOrUpdate(DateTimeOffset.Now.Date, (1, 0), (d, old) => (old.api + 1, old.cache));
         }
         private static void IncrementCacheUsage()
         {
             apiUsageHistory.AddOrUpdate(DateTimeOffset.Now.Date, (0, 1), (d, old) => (old.api, old.cache + 1));
             SaveDataToFile();
         }
-         
+
         private static void LoadDataFromFile()
         {
             lock (lockObject)
@@ -130,6 +153,10 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
                     if (parsed.apiUsageHistory != null)
                     {
                         apiUsageHistory = new ConcurrentDictionary<DateTime, (int api, int cache)>(parsed.apiUsageHistory.ToDictionary(p => DateTime.Parse(p.date), p => (p.api, p.cache)));
+                    }
+                    if (parsed.exceptions != null)
+                    {
+                        exceptions = new ConcurrentDictionary<string, object>(parsed.exceptions.ToDictionary(r => r, r => (object)null));
                     }
                 }
                 catch (Exception ex)
@@ -151,7 +178,8 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
                         .ToArray(),
                     apiUsageHistory = apiUsageHistory
                         .Select(kvp => new ApiUsage { date = kvp.Key.ToString("O"), api = kvp.Value.api, cache = kvp.Value.cache })
-                        .ToArray()
+                        .ToArray(),
+                    exceptions = exceptions.Keys.ToArray()
                 };
                 var jsonPresent = JsonUtility.ToJson(jsonModel, true);
                 File.WriteAllText(pathToCacheFile, jsonPresent);

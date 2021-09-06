@@ -42,6 +42,11 @@ namespace Packages.Excursion360_Builder.Editor.HTTP
                         error(w.downloadHandler.text);
                         yield break;
                     }
+                    if (w.isNetworkError)
+                    {
+                        error(w.error);
+                        yield break;
+                    }
                     done(w.downloadHandler);
                 }
             }
@@ -87,6 +92,11 @@ namespace Packages.Excursion360_Builder.Editor.HTTP
                     if (w.isHttpError)
                     {
                         error(w.downloadHandler.text);
+                        yield break;
+                    }
+                    if (w.isNetworkError)
+                    {
+                        error(w.error);
                         yield break;
                     }
                     done(w.downloadHandler);

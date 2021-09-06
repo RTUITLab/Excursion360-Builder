@@ -6,6 +6,7 @@ using Packages.Excursion360_Builder.Editor.Extensions;
 using Packages.Excursion360_Builder.Editor;
 using Packages.Excursion360_Builder.Editor.States.Items;
 using Packages.Excursion360_Builder.Editor.LivePreview;
+using Packages.Excursion360_Builder.Editor.SpellCheck;
 
 #if UNITY_EDITOR
 
@@ -101,13 +102,15 @@ public class StateEditorWindow : EditorWindow
             return;
 
         var state = _selectedStates[0];
-
+        Undo.RecordObject(state, "Change state");
         if (_connectionsEditMode)
             TourEditor.StateGraphRenderer.targetState = state;
 
         // Draw title edit field
         GUILayout.Label("State title: ", EditorStyles.boldLabel);
-        state.title = EditorGUILayout.TextField(state.title);
+
+        state.title = SpellCheckHintsContent.DrawTextField($"{state.GetInstanceID()}_{nameof(state.title)}", state.title, Repaint, newValue => { state.title = newValue; });
+
         EditorGUILayout.Space();
 
         // Draw panorama texture edit field
@@ -140,7 +143,7 @@ public class StateEditorWindow : EditorWindow
         GUILayout.Label("Actions: ", EditorStyles.boldLabel);
         GUILayout.BeginHorizontal();
 
-        
+
 
         if (GUILayout.Button("Focus camera", GUILayout.Height(50)))
         {
