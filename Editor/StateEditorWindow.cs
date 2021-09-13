@@ -42,9 +42,9 @@ public class StateEditorWindow : EditorWindow
         SceneView.duringSceneGui -= OnSceneGUI;
     }
 
+
     private void OnGUI()
     {
-        _selectedStates = _selectedStates.Where(s => (bool)(s)).ToList();
         // Draw pages
         if (_selectedStates.Count == 0 || _selectedStates.Count > 2)
         {
@@ -81,13 +81,19 @@ public class StateEditorWindow : EditorWindow
         EditorGUILayout.Space();
 
         // Force redraw all
+        //Repaint();
+        //SceneView.RepaintAll();
+    }
+
+    private void OnSelectionChange()
+    {
+        _selectedStates = GetSlectedStates();
         Repaint();
-        SceneView.RepaintAll();
     }
 
     private void OnSceneGUI(SceneView sceneView)
     {
-        _selectedStates = GetSlectedStates();
+        //_selectedStates = GetSlectedStates();
     }
 
     private void DrawIdlePageGUI()
@@ -108,7 +114,6 @@ public class StateEditorWindow : EditorWindow
 
         // Draw title edit field
         GUILayout.Label("State title: ", EditorStyles.boldLabel);
-
         state.title = SpellCheckHintsContent.DrawTextField($"{state.GetInstanceID()}_{nameof(state.title)}", state.title, Repaint, newValue => { state.title = newValue; });
 
         EditorGUILayout.Space();
@@ -242,13 +247,13 @@ public class StateEditorWindow : EditorWindow
         groupConnectionsOpened = EditorGUILayout.Foldout(groupConnectionsOpened, "Group connections:", true);
         if (groupConnectionsOpened)
         {
-            groupConnectionEditor.Draw(state);
+            groupConnectionEditor.Draw(state, Repaint);
         }
 
         fieldItemsOpened = EditorGUILayout.Foldout(fieldItemsOpened, "Field items", true);
         if (fieldItemsOpened)
         {
-            fieldItemEditor.Draw(state);
+            fieldItemEditor.Draw(state, Repaint);
         }
         EditorGUILayout.EndScrollView();
 
@@ -293,7 +298,7 @@ public class StateEditorWindow : EditorWindow
 
     public void OnInspectorUpdate()
     {
-        Repaint();
+        //Repaint();
     }
 
     public static void FocusCamera(GameObject obj)

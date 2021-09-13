@@ -27,12 +27,13 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
             bool multiline = false)
         {
             var currentRect = EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(EditorGUI.indentLevel * 20);
+
             var result = SpellCheckCache.QueueChecking(uniqueFieldKey, currentContent, repaintCallback);
             if (result == null)
             {
                 if (Buttons.Loading())
                 {
-                    Debug.Log("loading");
                 }
             }
             else if (result.Length == 0)

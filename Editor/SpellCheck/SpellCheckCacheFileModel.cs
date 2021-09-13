@@ -25,6 +25,5 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
     {
         public string date;
         public int api;
-        public int cache;
     }
 }

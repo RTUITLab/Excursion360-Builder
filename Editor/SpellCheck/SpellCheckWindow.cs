@@ -28,9 +28,8 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
             if (showStats)
             {
                 EditorGUI.indentLevel++;
-                var (apiUsage, cacheUsage) = SpellCheckCache.StatsToday;
+                var apiUsage = SpellCheckCache.StatsToday;
                 EditorGUILayout.LabelField("Api hits today", apiUsage.ToString());
-                EditorGUILayout.LabelField("Cache hits today", cacheUsage.ToString());
                 EditorGUI.indentLevel--;
             }
         }

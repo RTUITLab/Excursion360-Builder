@@ -1,5 +1,6 @@
 ﻿using Excursion360_Builder.Shared.States.Items.Field;
 using Packages.Excursion360_Builder.Editor;
+using Packages.Excursion360_Builder.Editor.SpellCheck;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace Excursion360_Builder.Editor.States.Items
 {
     class FieldItemEditor : EditorBase
     {
-        public void Draw(State state)
+        public void Draw(State state, Action repaintAction)
         {
             EditorGUI.indentLevel++;
             EditorGUILayout.BeginHorizontal();
@@ -32,19 +33,27 @@ namespace Excursion360_Builder.Editor.States.Items
                 fieldItem.isOpened = EditorGUILayout.Foldout(fieldItem.isOpened, groupConnectionTitle, true);
                 if (fieldItem.isOpened)
                 {
-                    DrawFieldItem(state, fieldItem);
+                    DrawFieldItem(state, fieldItem, repaintAction);
                 }
             }
             EditorGUI.indentLevel--;
         }
 
-        private void DrawFieldItem(State state, FieldItem fieldItem)
+        private void DrawFieldItem(State state, FieldItem fieldItem, Action repaintAction)
         {
             EditorGUI.indentLevel++;
 
             Undo.RecordObject(fieldItem, "Edit group connection title");
             EditorGUILayout.BeginHorizontal();
-            fieldItem.title = EditorGUILayout.TextField("Title:", fieldItem.title);
+
+            fieldItem.title = SpellCheckHintsContent.DrawTextField(
+                $"{fieldItem.GetInstanceID()}_{nameof(fieldItem.title)}",
+                "Title",
+                fieldItem.title,
+                repaintAction,
+                n => { fieldItem.title = n; });
+
+            //fieldItem.title = EditorGUILayout.TextField("Title:", fieldItem.title);
             if (Buttons.Delete())
             {
                 Undo.DestroyObjectImmediate(fieldItem);

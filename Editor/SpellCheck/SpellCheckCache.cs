@@ -17,7 +17,7 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
 
         private static string pathToCacheFile;
         private static ConcurrentDictionary<string, RowResponse[]> cacheDictionary = new ConcurrentDictionary<string, RowResponse[]>();
-        private static ConcurrentDictionary<DateTime, (int api, int cache)> apiUsageHistory = new ConcurrentDictionary<DateTime, (int api, int cache)>();
+        private static ConcurrentDictionary<DateTime, int> apiUsageHistory = new ConcurrentDictionary<DateTime, int>();
         private static ConcurrentDictionary<string, object> exceptions = new ConcurrentDictionary<string, object>();
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
         private static ConcurrentDictionary<string, (string raw, Action notifyCallback)> checkingQueue = new ConcurrentDictionary<string, (string raw, Action notifyCallback)>();
 
 
-        public static (int api, int cache) StatsToday => apiUsageHistory.TryGetValue(DateTime.Now.Date, out var stats) ? stats : (0, 0);
+        public static int StatsToday => apiUsageHistory.TryGetValue(DateTime.Now.Date, out var stats) ? stats : 0;
 
         private static DateTime lastUpdateTime;
 
@@ -78,11 +78,15 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
 
         public static RowResponse[] QueueChecking(string key, string row, Action notifyCallback)
         {
+            if (string.IsNullOrWhiteSpace(row))
+            {
+                row = string.Empty;
+            }
             if (cacheDictionary.TryGetValue(row, out var response))
             {
-                IncrementCacheUsage();
                 return response.Where(r => !exceptions.ContainsKey(r.word)).ToArray();
             }
+            
             checkingQueue.AddOrUpdate(key, (row, notifyCallback), (k, o) => (row, notifyCallback));
             return null;
 
@@ -111,7 +115,6 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
         {
             if (cacheDictionary.TryGetValue(row, out var response))
             {
-                IncrementCacheUsage();
                 notifyAction();
                 yield break;
             }
@@ -130,12 +133,7 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
 
         private static void IncrementApiUsage()
         {
-            apiUsageHistory.AddOrUpdate(DateTimeOffset.Now.Date, (1, 0), (d, old) => (old.api + 1, old.cache));
-        }
-        private static void IncrementCacheUsage()
-        {
-            apiUsageHistory.AddOrUpdate(DateTimeOffset.Now.Date, (0, 1), (d, old) => (old.api, old.cache + 1));
-            SaveDataToFile();
+            apiUsageHistory.AddOrUpdate(DateTimeOffset.Now.Date, 1, (d, old) => old + 1);
         }
 
         private static void LoadDataFromFile()
@@ -152,7 +150,7 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
                     }
                     if (parsed.apiUsageHistory != null)
                     {
-                        apiUsageHistory = new ConcurrentDictionary<DateTime, (int api, int cache)>(parsed.apiUsageHistory.ToDictionary(p => DateTime.Parse(p.date), p => (p.api, p.cache)));
+                        apiUsageHistory = new ConcurrentDictionary<DateTime, int>(parsed.apiUsageHistory.ToDictionary(p => DateTime.Parse(p.date), p => (p.api)));
                     }
                     if (parsed.exceptions != null)
                     {
@@ -177,11 +175,11 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
                         .Select(kvp => new SpellCheckPair { word = kvp.Key, result = kvp.Value })
                         .ToArray(),
                     apiUsageHistory = apiUsageHistory
-                        .Select(kvp => new ApiUsage { date = kvp.Key.ToString("O"), api = kvp.Value.api, cache = kvp.Value.cache })
+                        .Select(kvp => new ApiUsage { date = kvp.Key.ToString("O"), api = kvp.Value})
                         .ToArray(),
                     exceptions = exceptions.Keys.ToArray()
                 };
-                var jsonPresent = JsonUtility.ToJson(jsonModel, true);
+                var jsonPresent = JsonUtility.ToJson(jsonModel);
                 File.WriteAllText(pathToCacheFile, jsonPresent);
             }
         }
