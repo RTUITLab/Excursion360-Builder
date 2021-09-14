@@ -119,7 +119,7 @@ internal class TourExporter
         }
 
         Exported.Tour tour = PrepateTour(Tour.Instance);
-        Debug.Log($"Found {states.Length} states");
+
         // Pre process states
         UpdateProcess(0, states.Length, "Exporting", "");
 
@@ -417,7 +417,7 @@ internal class TourExporter
         }
 
         var filename = $"logo_{Tour.Instance.logoTexture.GetInstanceID()}{Path.GetExtension(path)}";
-        Debug.Log(Path.Combine(folderPath, filename));
+
         File.Copy(path, Path.Combine(folderPath, filename));
         logoPath = filename;
         return true;
