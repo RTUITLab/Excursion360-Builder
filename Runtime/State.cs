@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using Packages.Excursion360_Builder.Runtime;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -16,6 +17,7 @@ public class State : MonoBehaviour
     /// <summary>
     /// Name of this place
     /// </summary>
+    [SpellCheck]
     public string title;
 
     private Renderer _renderer;

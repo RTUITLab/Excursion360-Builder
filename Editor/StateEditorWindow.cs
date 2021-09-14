@@ -6,6 +6,7 @@ using Packages.Excursion360_Builder.Editor.Extensions;
 using Packages.Excursion360_Builder.Editor;
 using Packages.Excursion360_Builder.Editor.States.Items;
 using Packages.Excursion360_Builder.Editor.LivePreview;
+using Packages.Excursion360_Builder.Editor.SpellCheck;
 
 #if UNITY_EDITOR
 
@@ -41,9 +42,9 @@ public class StateEditorWindow : EditorWindow
         SceneView.duringSceneGui -= OnSceneGUI;
     }
 
+
     private void OnGUI()
     {
-        _selectedStates = _selectedStates.Where(s => (bool)(s)).ToList();
         // Draw pages
         if (_selectedStates.Count == 0 || _selectedStates.Count > 2)
         {
@@ -80,13 +81,19 @@ public class StateEditorWindow : EditorWindow
         EditorGUILayout.Space();
 
         // Force redraw all
+        //Repaint();
+        //SceneView.RepaintAll();
+    }
+
+    private void OnSelectionChange()
+    {
+        _selectedStates = GetSlectedStates();
         Repaint();
-        SceneView.RepaintAll();
     }
 
     private void OnSceneGUI(SceneView sceneView)
     {
-        _selectedStates = GetSlectedStates();
+        //_selectedStates = GetSlectedStates();
     }
 
     private void DrawIdlePageGUI()
@@ -101,13 +108,14 @@ public class StateEditorWindow : EditorWindow
             return;
 
         var state = _selectedStates[0];
-
+        Undo.RecordObject(state, "Change state");
         if (_connectionsEditMode)
             TourEditor.StateGraphRenderer.targetState = state;
 
         // Draw title edit field
         GUILayout.Label("State title: ", EditorStyles.boldLabel);
-        state.title = EditorGUILayout.TextField(state.title);
+        state.title = SpellCheckHintsContent.DrawTextField($"{state.GetInstanceID()}_{nameof(state.title)}", state.title, Repaint, newValue => { state.title = newValue; });
+
         EditorGUILayout.Space();
 
         // Draw panorama texture edit field
@@ -140,7 +148,7 @@ public class StateEditorWindow : EditorWindow
         GUILayout.Label("Actions: ", EditorStyles.boldLabel);
         GUILayout.BeginHorizontal();
 
-        
+
 
         if (GUILayout.Button("Focus camera", GUILayout.Height(50)))
         {
@@ -150,7 +158,7 @@ public class StateEditorWindow : EditorWindow
 
         if (GUILayout.Button("Open preview", GUILayout.Height(50)))
         {
-            var window = EditorWindow.GetWindow<LivePreviwWindow>("Live preview");
+            var window = EditorWindow.GetWindow<LivePreviewWindow>("Live preview", focus: false);
             window.OpenState(state);
         }
 
@@ -239,13 +247,13 @@ public class StateEditorWindow : EditorWindow
         groupConnectionsOpened = EditorGUILayout.Foldout(groupConnectionsOpened, "Group connections:", true);
         if (groupConnectionsOpened)
         {
-            groupConnectionEditor.Draw(state);
+            groupConnectionEditor.Draw(state, Repaint);
         }
 
         fieldItemsOpened = EditorGUILayout.Foldout(fieldItemsOpened, "Field items", true);
         if (fieldItemsOpened)
         {
-            fieldItemEditor.Draw(state);
+            fieldItemEditor.Draw(state, Repaint);
         }
         EditorGUILayout.EndScrollView();
 
@@ -290,7 +298,7 @@ public class StateEditorWindow : EditorWindow
 
     public void OnInspectorUpdate()
     {
-        Repaint();
+        //Repaint();
     }
 
     public static void FocusCamera(GameObject obj)

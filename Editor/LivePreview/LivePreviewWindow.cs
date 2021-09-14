@@ -1,5 +1,5 @@
 ﻿using Packages.Excursion360_Builder.Editor.Viewer;
-using Packages.Excursion360_Builder.Editor.WebBuild;
+using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using Packages.tour_creator.Editor.WebBuild;
 using System;
 using System.Collections.Concurrent;
@@ -15,11 +15,15 @@ using Debug = UnityEngine.Debug;
 
 namespace Packages.Excursion360_Builder.Editor.LivePreview
 {
-    public class LivePreviwWindow : EditorWindow
+    public class LivePreviewWindow : EditorWindow
     {
         private bool isDotNetInstalled;
         private Process previewBackendProcess;
-        private BuildPack selectedBuildPack;
+        private WebViewerBuildPack selectedBuildPack;
+
+        private ViewerBuildsGUI viewerBuildsGUI = new ViewerBuildsGUI();
+
+
         private string ProjectFolder =>
             Path.GetFullPath("Packages/com.rexagon.tour-creator/.LiveViewer/Excursion360-Builder");
         private string ProjectVersionFile =>
@@ -36,23 +40,25 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             try
             {
 
-            if (previewBackendProcess == null || previewBackendProcess.HasExited)
-            {
-                EditorUtility.DisplayDialog("Info", "Please, start preview viewer", "Ok");
-                return;
+                if (previewBackendProcess == null || previewBackendProcess.HasExited)
+                {
+                    EditorUtility.DisplayDialog("Info", "Please, start preview viewer", "Ok");
+                    Focus();
+                    return;
+                }
+                var resourceFolder = Path.Combine(OutputFolder, "wwwroot");
+                Directory.CreateDirectory(resourceFolder);
+                var tour = TourExporter.GenerateTour(resourceFolder, TourExporter.GenerateTourOptions.ForPreview());
+                if (tour == null)
+                {
+                    EditorUtility.DisplayDialog("Error", "Can't create tour", "Ok");
+                    return;
+                }
+                tour.firstStateId = state.GetExportedId();
+                BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.SendCameraRotation(SceneView.lastActiveSceneView.rotation));
+                BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.OpenTour(tour));
             }
-            var resourceFolder = Path.Combine(OutputFolder, "wwwroot");
-            Directory.CreateDirectory(resourceFolder);
-            var tour = TourExporter.GenerateTour(resourceFolder, ResourceHandlePath.PublishPath);
-            if (tour == null)
-            {
-                EditorUtility.DisplayDialog("Error", "Can't create tour", "Ok");
-                return;
-            }
-            tour.firstStateId = state.GetExportedId();
-            BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.SendCameraRotation(SceneView.lastActiveSceneView.rotation));
-            BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.OpenTour(tour));
-            } finally
+            finally
             {
                 EditorUtility.ClearProgressBar();
             }
@@ -77,6 +83,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         private void OnEnable()
         {
             isDotNetInstalled = DotnetHelpers.CheckDotNetInstalled();
+            viewerBuildsGUI.Initialize();
         }
 
         private void OnGUI()
@@ -92,8 +99,8 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 DrawInstallDotNetMessage();
                 return;
             }
-
-            selectedBuildPack = ViewerBuildsGUI.Draw();
+            viewerBuildsGUI.Draw();
+            selectedBuildPack = viewerBuildsGUI.CurrentPack;
 
             if (!File.Exists(GetExecutablePath()))
             {

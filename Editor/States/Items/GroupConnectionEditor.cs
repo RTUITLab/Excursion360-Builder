@@ -1,4 +1,5 @@
 ﻿using Packages.Excursion360_Builder.Editor;
+using Packages.Excursion360_Builder.Editor.SpellCheck;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ using UnityEngine;
 class GroupConnectionEditor : EditorBase
 {
 
-    public void Draw(State state)
+    public void Draw(State state, Action repaintAction)
     {
         if (GUILayout.Button("Add"))
         {
@@ -27,8 +28,20 @@ class GroupConnectionEditor : EditorBase
             EditorGUI.indentLevel++;
 
             Undo.RecordObject(groupConnection, "Edit group connection title");
-            groupConnection.title = EditorGUILayout.TextField("Title:", groupConnection.title);
-
+            EditorGUILayout.BeginHorizontal();
+            groupConnection.title = SpellCheckHintsContent.DrawTextField(
+                $"{groupConnection.GetInstanceID()}_{nameof(groupConnection.title)}",
+                "Title",
+                groupConnection.title,
+                repaintAction,
+                n => { groupConnection.title = n; });
+            if (Buttons.Delete())
+            {
+                Undo.DestroyObjectImmediate(groupConnection);
+                repaintAction();
+                return;
+            }
+            EditorGUILayout.EndHorizontal();
             var buttonStyle = Styles.ToggleButtonStyleNormal;
             if (StateItemPlaceEditor.EditableItem == (object)groupConnection)
                 buttonStyle = Styles.ToggleButtonStyleToggled;
@@ -87,7 +100,15 @@ class GroupConnectionEditor : EditorBase
             for (int i = 0; i < groupConnection.infos.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                groupConnection.infos[i] = EditorGUILayout.TextField("Info title: ", groupConnection.infos[i]);
+                //groupConnection.infos[i] = EditorGUILayout.TextField("Info title: ", groupConnection.infos[i]);
+
+                groupConnection.infos[i] = SpellCheckHintsContent.DrawTextField(
+                    $"{groupConnection.GetInstanceID()}_{nameof(groupConnection.infos)}_{i}",
+                    "Info title:",
+                    groupConnection.infos[i],
+                    repaintAction,
+                    n => { groupConnection.infos[i] = n; });
+
                 if (GUI.Button(EditorGUI.IndentedRect(EditorGUILayout.GetControlRect(GUILayout.Width(80))), $"Delete", Styles.DeleteButtonStyle))
                 {
                     groupConnection.infos.RemoveAt(i);

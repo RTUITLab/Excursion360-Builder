@@ -17,10 +17,16 @@ class Styles
         DeleteButtonStyle.normal.textColor = Color.red;
         DeleteButtonStyle.active.textColor = Color.red;
 
+        RichLabelStyle = new GUIStyle(GUI.skin.label)
+        {
+            richText = true
+        };
     }
     public static readonly GUIStyle ToggleButtonStyleNormal;
     public static readonly GUIStyle ToggleButtonStyleToggled;
 
     public static readonly GUIStyle DeleteButtonStyle;
+
+    public static readonly GUIStyle RichLabelStyle;
 }
 

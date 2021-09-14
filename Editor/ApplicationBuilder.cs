@@ -48,7 +48,7 @@ public class ApplicationBuilder
 
         if (summary.result == BuildResult.Failed)
         {
-            Debug.Log("Build failed");
+            Debug.LogError("Build failed");
         }
     }
 

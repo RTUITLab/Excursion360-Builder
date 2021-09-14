@@ -38,8 +38,6 @@ public class TextureSourceEditor
     {
         UpdateState(state);
 
-        GUI.changed = true;
-
         EditorGUI.BeginChangeCheck();
 
         _currentTextureSourceEditor.OnInspectorGUI();

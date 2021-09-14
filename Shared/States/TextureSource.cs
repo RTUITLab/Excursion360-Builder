@@ -9,9 +9,7 @@ public abstract class TextureSource : MonoBehaviour
 {
     public enum Type
     {
-        Image,
-        Video,
-        Stream
+        Image
     }
 
     public Texture LoadedTexture { protected set; get; }
@@ -50,6 +48,10 @@ public abstract class TextureSource : MonoBehaviour
 
 #if UNITY_EDITOR
     public abstract string Export(string destination, string stateName);
+    /// <summary>
+    /// Get path to resource file
+    /// </summary>
+    /// <returns></returns>
     public abstract string GetAssetPath();
 #endif
 }

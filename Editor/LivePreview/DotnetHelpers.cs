@@ -4,12 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace Packages.Excursion360_Builder.Editor.LivePreview
 {
-    public class DotnetHelpers
+    internal class DotnetHelpers
     {
         public static bool CheckDotNetInstalled()
         {
@@ -39,14 +40,14 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             }
             catch (Exception ex) when (ex is Win32Exception || ex is FileNotFoundException)
             {
-                Debug.Log("not found dotnet");
+                Debug.LogError("not found dotnet");
                 return false;
             }
         }
         public static void BuildLivePreviewBackend(
             string projectFolder,
             string outputFolder,
-            WebBuild.BuildPack selectedBuildPack)
+            WebViewerBuildPack selectedBuildPack)
         {
             try
             {
@@ -60,7 +61,6 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                                 $"-p:PublishTrimmed=true" +
                                 $"-p:DebugType=None" +
                                 $"-p:DebugSymbols=False";
-                Debug.Log(arguments);
                 var proc = Process.Start(new ProcessStartInfo
                 {
                     FileName = "dotnet",
@@ -77,7 +77,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             }
             catch (Exception ex)
             {
-                Debug.Log(ex.Message);
+                Debug.LogError(ex.Message);
                 throw;
             }
         }

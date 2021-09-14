@@ -4,6 +4,7 @@ using Packages.tour_creator.Editor;
 using Packages.Excursion360_Builder.Editor.WebBuild;
 using Packages.Excursion360_Builder.Editor.SceneRenderers;
 using System;
+using Packages.Excursion360_Builder.Editor.SpellCheck;
 
 #if UNITY_EDITOR
 using Packages.Excursion360_Builder.Editor.LivePreview;
@@ -42,7 +43,10 @@ public class TourEditor
 
     private const string MENU_ITEM_BUILD_DESKTOP = GROUP_NAME + "/Build For Desktop (TODO)";
     private const string MENU_ITEM_BUILD_ANDROID = GROUP_NAME + "/Build For Android (TODO)";
-    private const string MENU_ITEM_BUILD_WEB = GROUP_NAME + "/Build For WEB";
+    private const string MENU_ITEM_BUILD_WEB = GROUP_NAME + "/Build tour";
+    
+    
+    private const string MENU_ITEM_SPELL_CHECK = GROUP_NAME + "/Spell check";
 
     private static bool _areConnectionsVisible;
     private static bool _areLabelsVisible;
@@ -113,7 +117,7 @@ public class TourEditor
     [MenuItem(MENU_ITEM_LIVE_PREVIEW, false, 1)]
     static void MenuItemShowLivePreviewEditorWindow()
     {
-        EditorWindow.GetWindow<LivePreviwWindow>("Live preview");
+        EditorWindow.GetWindow<LivePreviewWindow>("Live preview");
     }
 
     [MenuItem(MENU_ITEM_SHOW_CONNECTIONS, false, 20)]
@@ -134,26 +138,33 @@ public class TourEditor
         SetItemsVisible(!_areItemsVisible);
     }
 
-    [MenuItem(MENU_ITEM_BUILD_DESKTOP, false, 40)]
-    private static void MenuItemBuildDesktop()
+
+    [MenuItem(MENU_ITEM_SPELL_CHECK, false, 30)]
+    private static void MenuItemOpenSpellCheck()
     {
-        EditorUtility.DisplayDialog("Not supported", "Desktop build not supported yet", "Ok");
-        return;
-        ApplicationBuilder.Build(ApplicationBuilder.BuildType.Desktop);
+        EditorWindow.GetWindow<SpellCheckWindow>("Spell check");
     }
 
-    [MenuItem(MENU_ITEM_BUILD_ANDROID, false, 41)]
-    private static void MenuItemBuildAndroid()
-    {
-        EditorUtility.DisplayDialog("Not supported", "Android build not supported yet", "Ok");
-        return;
-        ApplicationBuilder.Build(ApplicationBuilder.BuildType.Android);
-    }
+    //[MenuItem(MENU_ITEM_BUILD_DESKTOP, false, 40)]
+    //private static void MenuItemBuildDesktop()
+    //{
+    //    EditorUtility.DisplayDialog("Not supported", "Desktop build not supported yet", "Ok");
+    //    return;
+    //    ApplicationBuilder.Build(ApplicationBuilder.BuildType.Desktop);
+    //}
+
+    //[MenuItem(MENU_ITEM_BUILD_ANDROID, false, 41)]
+    //private static void MenuItemBuildAndroid()
+    //{
+    //    EditorUtility.DisplayDialog("Not supported", "Android build not supported yet", "Ok");
+    //    return;
+    //    ApplicationBuilder.Build(ApplicationBuilder.BuildType.Android);
+    //}
 
     [MenuItem(MENU_ITEM_BUILD_WEB, false, 42)]
     private static void MenuItemBuildWeb()
     {
-        EditorWindow.GetWindow<BuildPacksManagerWindow>("Web build manager");
+        EditorWindow.GetWindow<BuildExcursionWindow>("Build manager");
     }
 
     private static void SetConnectionsVisible(bool visible)

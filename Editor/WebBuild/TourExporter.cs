@@ -9,32 +9,85 @@ using ICSharpCode.SharpZipLib.Core;
 using Packages.tour_creator.Editor.WebBuild;
 using Excursion360_Builder.Shared.States.Items.Field;
 using Packages.Excursion360_Builder.Editor.WebBuild;
+using System.Text.RegularExpressions;
+using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
+using Packages.Excursion360_Builder.Editor;
 
 #if UNITY_EDITOR
-
 using UnityEditor;
 using Exported = Packages.tour_creator.Editor.Protocol;
 
-public class TourExporter
+internal class TourExporter
 {
-    public static void ExportTour(
-        BuildPack viewerPack,
-        string folderPath,
-        ResourceHandlePath resourceHandlePath)
+    internal class GenerateTourOptions
     {
+        public ResourceHandlePath ResourceHandlePath { get; }
+        public int ImageCroppingLevel { get; }
+        protected GenerateTourOptions(ResourceHandlePath resourceHandlePath, int imageCroppingLevel)
+        {
+            ResourceHandlePath = resourceHandlePath;
+            ImageCroppingLevel = imageCroppingLevel;
+        }
+        public static GenerateTourOptions ForPreview()
+        {
+            return new GenerateTourOptions(ResourceHandlePath.PublishPath, 0);
+        }
+    }
+    internal class ExportOptions : GenerateTourOptions
+    {
+        public string FolderPath { get; }
+        public WebViewerBuildPack ViewerPack { get; }
+        public DesktopClientBuildPack DesktopClientBuildPack { get; }
+
+        public ExportOptions(
+            WebViewerBuildPack viewerPack,
+            DesktopClientBuildPack desktopClientBuildPack,
+            string folderPath,
+            int imageCroppingLevel)
+            : base(ResourceHandlePath.CopyToDist, imageCroppingLevel)
+        {
+            FolderPath = folderPath;
+            ViewerPack = viewerPack;
+            DesktopClientBuildPack = desktopClientBuildPack;
+        }
+    }
+    public static void ExportTour(ExportOptions exportOptions)
+    {
+        if (Tour.Instance == null)
+        {
+            EditorUtility.DisplayDialog("Error", "There is no tour object on this scene!", "Ok");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(Tour.Instance.title))
+        {
+            EditorUtility.DisplayDialog("Error", "You must provide tour title", "Ok");
+            return;
+        }
+
+        var excursionFolder = Path.Combine(exportOptions.FolderPath, Tour.Instance.title);
+        Directory.CreateDirectory(excursionFolder);
+
+
         try
         {
-            UnpackViewer(viewerPack, folderPath);
-            if (!CopyLogo(folderPath, out var logoFileName))
+            UnpackViewer(exportOptions.ViewerPack, excursionFolder);
+
+            if (exportOptions.DesktopClientBuildPack != null)
+            {
+                UnpackDesktopClient(exportOptions.DesktopClientBuildPack, exportOptions.FolderPath);
+            }
+
+            if (!CopyLogo(excursionFolder, out var logoFileName))
             {
                 return;
             }
-            CreateConfigFile(folderPath, logoFileName);
 
-            Exported.Tour tour = GenerateTour(folderPath, resourceHandlePath);
+            CreateConfigFile(excursionFolder, logoFileName);
+            ProjectEditorPrefs.IncrementBuildNum();
+            Exported.Tour tour = GenerateTour(excursionFolder, exportOptions);
 
             // Serialize and write
-            File.WriteAllText(folderPath + "/tour.json", JsonUtility.ToJson(tour, true));
+            File.WriteAllText(excursionFolder + "/tour.json", JsonUtility.ToJson(tour, true));
         }
         catch (Exception ex)
         {
@@ -47,16 +100,9 @@ public class TourExporter
         // Finish
     }
 
-    public static Exported.Tour GenerateTour(string folderPath, ResourceHandlePath resourceHandlePath)
+
+    public static Exported.Tour GenerateTour(string folderPath, GenerateTourOptions generateTourOptions)
     {
-
-        // Find first state
-        if (Tour.Instance == null)
-        {
-            EditorUtility.DisplayDialog("Error", "There is no tour object on this scene!", "Ok");
-            return null;
-        }
-
         State firstState = Tour.Instance.firstState;
         if (firstState == null)
         {
@@ -72,8 +118,8 @@ public class TourExporter
             return null;
         }
 
-        Exported.Tour tour = PrepateTour(firstState);
-        Debug.Log($"Finded {states.Length} states");
+        Exported.Tour tour = PrepateTour(Tour.Instance);
+
         // Pre process states
         UpdateProcess(0, states.Length, "Exporting", "");
 
@@ -83,11 +129,17 @@ public class TourExporter
 
             try
             {
-                if (!TryHandleState(state, folderPath, resourceHandlePath, out var exportedState))
+                if (!TryHandleState(
+                    state,
+                    folderPath,
+                    generateTourOptions.ResourceHandlePath,
+                    generateTourOptions.ImageCroppingLevel,
+                    out var exportedState))
                 {
                     EditorUtility.DisplayDialog("Error", $"Error while exporting state {state.title}", "Ok");
                     return null;
                 }
+
                 tour.states.Add(exportedState);
             }
             catch (Exception ex)
@@ -99,16 +151,64 @@ public class TourExporter
 
             UpdateProcess(i + 1, states.Length, "Exporting", $"{i + 1}/{states.Length}: {state.title}");
         }
+        PatchViewer(folderPath, tour);
         return tour;
     }
-
-    private static Exported.Tour PrepateTour(State firstState)
+    /// <summary>
+    /// Apply tour title and hash
+    /// </summary>
+    /// <param name="folderPath">Folder of viewer with target files and viewer</param>
+    /// <param name="title">Title of tour</param>
+    private static void PatchViewer(string folderPath, Exported.Tour tour)
     {
+        var indexFileName = "index.html";
+        var titleTemplate = "%TITLE_TEMPLATE%";
+
+        var indexFile = Path.Combine(folderPath, indexFileName);
+        if (!File.Exists(indexFile))
+        {
+            Debug.LogWarning($"Can't find {indexFileName} at {folderPath} for patching");
+            return;
+        }
+        var indexFileContent = File.ReadAllText(indexFile);
+        if (indexFileContent.Contains(titleTemplate))
+        {
+            indexFileContent = indexFileContent.Replace(titleTemplate, tour.title);
+        }
+        else
+        {
+            Debug.LogWarning($"Can't find title template {titleTemplate} in index file. Please, use latest viewer.");
+        }
+        PatchJsFile(folderPath, $"{tour.id}-{tour.versionNum}", ref indexFileContent);
+        File.WriteAllText(indexFile, indexFileContent);
+    }
+
+    private static void PatchJsFile(string folderPath, string tourHash, ref string indexFileContent)
+    {
+        var jsLinkedFiles = Directory.GetFiles(folderPath, "client.js*");
+        var renamePatterns = jsLinkedFiles
+            .Select(path => (path, lineEnd: Regex.Match(path, @"client.js(?<name>.+|)$").Groups["name"].Value))
+            .Select(pair => (source: pair.path, target: Path.Combine(Path.GetDirectoryName(pair.path), $"{tourHash}.js{pair.lineEnd}")))
+            .ToArray();
+        foreach (var (source, target) in renamePatterns)
+        {
+            File.Move(source, target);
+        }
+        indexFileContent = indexFileContent.Replace("client.js", $"{tourHash}.js");
+    }
+
+    private static Exported.Tour PrepateTour(Tour tour)
+    {
+        EditorUtility.SetDirty(tour);
         return new Exported.Tour
         {
-            tourProtocolVersion = "v0.8",
-            firstStateId = firstState.GetExportedId(),
-            colorSchemes = Tour.Instance.colorSchemes.Select(cs => cs.color).ToArray(),
+            id = ProjectEditorPrefs.ProjectId,
+            title = tour.title,
+            BuildTime = DateTimeOffset.Now,
+            versionNum = ProjectEditorPrefs.BuildNum,
+            tourProtocolVersion = "v0.9",
+            firstStateId = tour.firstState.GetExportedId(),
+            colorSchemes = tour.colorSchemes.Select(cs => cs.color).ToArray(),
             states = new List<Exported.State>(),
         };
     }
@@ -117,6 +217,7 @@ public class TourExporter
         State state,
         string folderPath,
         ResourceHandlePath resourceHandlePath,
+        int imageCroppingLevel,
         out Exported.State exportedState)
     {
         exportedState = default;
@@ -126,21 +227,29 @@ public class TourExporter
             EditorUtility.DisplayDialog("Error", "State has no texture source!", "Ok");
             return false;
         }
+
         var stateId = state.GetExportedId();
 
-        string url;
+        var textureFileLocation = textureSource.GetAssetPath();
+        string url = null;
+        string croppedImageUrl = null;
         switch (resourceHandlePath)
         {
             case ResourceHandlePath.CopyToDist:
-                url = textureSource.Export(folderPath, stateId);
+                var stateFolderPath = Path.Combine(folderPath, stateId);
+                ImageCropper.HandleImage(textureFileLocation, stateFolderPath, imageCroppingLevel);
+                croppedImageUrl = stateId;
                 break;
             case ResourceHandlePath.PublishPath:
-                url = textureSource.GetAssetPath();
+                url = textureFileLocation;
                 if (url.StartsWith("Packages"))
                 {
-                    EditorUtility.DisplayDialog("Error", "You can't use texture from Packages while preview. Please use textures only from Assets", "Ok");
+                    EditorUtility.DisplayDialog("Error",
+                        "You can't use texture from Packages while preview. Please use textures only from Assets",
+                        "Ok");
                     return false;
                 }
+
                 break;
             default:
                 throw new Exception($"incorrect ResourceHandlePath {resourceHandlePath}");
@@ -151,6 +260,7 @@ public class TourExporter
             id = stateId,
             title = state.title,
             url = url,
+            croppedImageUrl = croppedImageUrl,
             type = textureSource.SourceType.ToString().ToLower(),
             pictureRotation = state.transform.rotation,
             links = GetLinks(state),
@@ -160,7 +270,8 @@ public class TourExporter
         return true;
     }
 
-    private static List<Exported.FieldItem> GetFieldItems(State state, string folderPath, ResourceHandlePath resourceHandlePath)
+    private static List<Exported.FieldItem> GetFieldItems(State state, string folderPath,
+        ResourceHandlePath resourceHandlePath)
     {
         var fieldItems = new List<Exported.FieldItem>();
 
@@ -172,49 +283,52 @@ public class TourExporter
             {
                 title = fieldItem.title,
                 vertices = fieldItem.vertices.Select(v => v.Orientation).ToArray(),
-                images = fieldItem.images.Select((t, i) => ExportResource(
-                    t,
-                    folderPath,
-                    $"{fieldItem.GetExportedId()}_{i}",
-                    resourceHandlePath))
-                .ToArray(),
-                videos = fieldItem.videos.Select((t, i) => ExportResource(
-                    t,
-                    folderPath,
-                    $"{fieldItem.GetExportedId()}_{i}",
-                    resourceHandlePath))
-                .ToArray(),
-                text = fieldItem.text,
-                audios = fieldItem.audios.Select((t, i) => new Exported.FieldItemAudioContent
-                {
-                    src = ExportResource(
-                        t,
+                images = fieldItem.images.Select((texture, i) => ExportResource(
+                        texture,
                         folderPath,
                         $"{fieldItem.GetExportedId()}_{i}",
-                        resourceHandlePath),
-                    duration = t.length
+                        resourceHandlePath))
+                    .ToArray(),
+                videos = fieldItem.videos.Select((video, i) => ExportResource(
+                        video,
+                        folderPath,
+                        $"{fieldItem.GetExportedId()}_{i}",
+                        resourceHandlePath))
+                    .ToArray(),
+                text = fieldItem.text,
+                audios = fieldItem.audios.Select((audio, i) => new Exported.FieldItemAudioContent
+                {
+                    src = ExportResource(
+                            audio,
+                            folderPath,
+                            $"{fieldItem.GetExportedId()}_{i}",
+                            resourceHandlePath),
+                    duration = audio.length
                 })
-                .ToArray()
+                    .ToArray()
             });
         }
 
         return fieldItems;
     }
 
-    private static string ExportResource(UnityEngine.Object resourceToExport, string destination, string fileName, ResourceHandlePath resourceHandlePath)
+    private static string ExportResource(UnityEngine.Object resourceToExport, string destination, string fileName,
+        ResourceHandlePath resourceHandlePath)
     {
-        string path = AssetDatabase.GetAssetPath(resourceToExport);
+        var path = AssetDatabase.GetAssetPath(resourceToExport);
         switch (resourceHandlePath)
         {
             case ResourceHandlePath.CopyToDist:
-                string filename = fileName + Path.GetExtension(path);
+                var filename = fileName + Path.GetExtension(path);
                 File.Copy(path, Path.Combine(destination, filename));
                 return filename;
             case ResourceHandlePath.PublishPath:
                 if (path.StartsWith("Packages"))
                 {
-                    throw new Exception($"You can't use texture from Packages while preview. Please use textures only from Assets");
+                    throw new Exception(
+                        $"You can't use texture from Packages while preview. Please use textures only from Assets");
                 }
+
                 return path;
             default:
                 throw new Exception($"incorrect ResourceHandlePath {resourceHandlePath}");
@@ -237,6 +351,7 @@ public class TourExporter
                 rotationAfterStepAngle = connection.rotationAfterStepAngle
             });
         }
+
         return stateLinks;
     }
 
@@ -268,6 +383,7 @@ public class TourExporter
                     .ToList()
             });
         }
+
         return stateLinks;
     }
 
@@ -288,24 +404,28 @@ public class TourExporter
         var path = AssetDatabase.GetAssetPath(Tour.Instance.logoTexture);
         if (string.IsNullOrEmpty(path))
         {
-            if (!EditorUtility.DisplayDialog("Warning", "There is no logo to navigate between locations. Are you sure you want to leave the default logo?", "Yes, continue", "Cancel"))
+            if (!EditorUtility.DisplayDialog("Warning",
+                "There is no logo to navigate between locations. Are you sure you want to leave the default logo?",
+                "Yes, continue", "Cancel"))
             {
                 EditorUtility.DisplayDialog("Cancel", "Operation cancelled", "Ok");
                 return false;
             }
+
             logoPath = "";
             return true;
         }
+
         var filename = $"logo_{Tour.Instance.logoTexture.GetInstanceID()}{Path.GetExtension(path)}";
-        Debug.Log(Path.Combine(folderPath, filename));
+
         File.Copy(path, Path.Combine(folderPath, filename));
         logoPath = filename;
         return true;
     }
 
-    public static void UnpackViewer(BuildPack viewer, string folderPath)
+    public static void UnpackViewer(WebViewerBuildPack viewer, string folderPath)
     {
-        using (var fileStream = File.OpenRead(viewer.Location))
+        using (var fileStream = File.OpenRead(viewer.ArchiveLocation))
         using (var zipInputStream = new ZipInputStream(fileStream))
         {
             while (zipInputStream.GetNextEntry() is ZipEntry zipEntry)
@@ -315,7 +435,7 @@ public class TourExporter
 
                 var fullZipToPath = Path.Combine(folderPath, entryFileName);
                 var directoryName = Path.GetDirectoryName(fullZipToPath);
-                if (directoryName.Length > 0)
+                if (!string.IsNullOrEmpty(directoryName))
                     Directory.CreateDirectory(directoryName);
 
                 if (Path.GetFileName(fullZipToPath).Length == 0)
@@ -331,6 +451,16 @@ public class TourExporter
         }
     }
 
+    private static void UnpackDesktopClient(DesktopClientBuildPack desktopClientBuildPack, string folderPath)
+    {
+        foreach (var file in Directory
+            .GetFiles(desktopClientBuildPack.FolderLocation)
+            .Where(f => !f.EndsWith(".meta")))
+        {
+            File.Copy(file, Path.Combine(folderPath, Path.GetFileName(file)));
+        }
+    }
+
 
     public static bool TryGetTargetFolder(string folderPath)
     {
@@ -339,7 +469,9 @@ public class TourExporter
             EditorUtility.DisplayDialog("Error", "Selected directory does not exist", "Ок");
             return false;
         }
-        if (!EditorUtility.DisplayDialog("Warning", "All files in the selected folder will be deleted, are you sure?", "Yes, delete", "Cancel"))
+
+        if (!EditorUtility.DisplayDialog("Warning", "All files in the selected folder will be deleted, are you sure?",
+            "Yes, delete", "Cancel"))
         {
             EditorUtility.DisplayDialog("Cancel", "Operation cancelled", "Ok");
             return false;
@@ -356,7 +488,24 @@ public class TourExporter
             }
             catch (Exception ex)
             {
-                EditorUtility.DisplayDialog("Error", $"Can't delete file {filePath}\n{ex.Message}\n{ex.StackTrace}", "Ok");
+                EditorUtility.DisplayDialog("Error", $"Can't delete file {filePath}\n{ex.Message}\n{ex.StackTrace}",
+                    "Ok");
+                return false;
+            }
+        }
+        var dirs = Directory.GetDirectories(folderPath);
+        for (int i = 0; i < dirs.Length; i++)
+        {
+            var dirPath = dirs[i];
+            UpdateProcess(i, files.Length, "Deleting old directoriy", dirPath);
+            try
+            {
+                Directory.Delete(dirPath, true);
+            }
+            catch (Exception ex)
+            {
+                EditorUtility.DisplayDialog("Error", $"Can't delete directory {dirPath}\n{ex.Message}\n{ex.StackTrace}",
+                    "Ok");
                 return false;
             }
         }

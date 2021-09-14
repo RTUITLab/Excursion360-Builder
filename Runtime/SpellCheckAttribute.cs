@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
-namespace Packages.Excursion360_Builder.Editor.Viewer
+namespace Packages.Excursion360_Builder.Runtime
 {
-    class ViewerBuildManager
+    public class SpellCheckAttribute : PropertyAttribute
     {
-    }   
+    }
 }

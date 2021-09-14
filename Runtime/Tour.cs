@@ -27,6 +27,8 @@ public class Tour : MonoBehaviour
 
     private static Tour _instance;
 
+    public string title = ">>place tour name here<<";
+
     public State firstState;
 
     public ConnectionMarker connectionMarkerPrefab;
@@ -39,6 +41,30 @@ public class Tour : MonoBehaviour
 
     private void OnValidate()
     {
+        ValidateTexture();
+        ValidateTitle();
+
+    }
+
+    private void ValidateTitle()
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return;
+        }
+        try
+        {
+            System.IO.Path.GetFullPath(title);
+        }
+        catch
+        {
+            title = "";
+            EditorUtility.DisplayDialog("Incorrect title", $"Title >>{title}<< must be OK for folder name", "Ok");
+        }
+    }
+
+    private void ValidateTexture()
+    {
         if (!logoTexture)
         {
             return;
@@ -49,9 +75,9 @@ public class Tour : MonoBehaviour
         {
             return;
         }
-
         EditorUtility.DisplayDialog("Incorrect logo", "You must use svg icon", "Ok");
         logoTexture = default;
+        return;
     }
 
     public VideoPlayerPool videoPlayerPool
