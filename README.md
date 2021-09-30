@@ -1,3 +1,7 @@
-# Tour Creator - Tools for creating tours
+# Tour Creator - Tool for creating 360 tours
 
-## [Документация](Documentation/DOCUMENTATION.md)
+## [Documentation (RU)](Documentation/DOCUMENTATION.md)
+
+## Architecture
+
+![Architecture](Architecture.png)
