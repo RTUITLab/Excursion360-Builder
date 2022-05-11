@@ -105,18 +105,18 @@ namespace Excursion360_Builder.Editor.States.Items
             for (int i = 0; i < fieldItem.vertices.Length; i++)
             {
                 var vertex = fieldItem.vertices[i];
-                var buttonStyle = Styles.ToggleButtonStyleNormal;
-                if (StateItemPlaceEditor.EditableItem == (object)vertex)
-                    buttonStyle = Styles.ToggleButtonStyleToggled;
-                if (GUILayout.Button(vertex.index.ToString(), buttonStyle))
+                var value = StateItemPlaceEditor.EditableItem == (object)vertex;
+                Debug.Log($"item {i} value: {value}");
+                if (GUILayout.Toggle(value, vertex.index.ToString(), Styles.ToggleButtonStyleNormal))
+                {
+                    // Clicked to true
+                    StateItemPlaceEditor.EnableEditing(state, vertex, Color.green);
+                }
+                else // disabled
                 {
                     if (StateItemPlaceEditor.EditableItem == (object)vertex)
                     {
                         StateItemPlaceEditor.CleadEditing();
-                    }
-                    else
-                    {
-                        StateItemPlaceEditor.EnableEditing(state, vertex, Color.green);
                     }
                 }
             }
