@@ -10,40 +10,15 @@ namespace Packages.Excursion360_Builder.Editor
 {
     static class ProjectEditorPrefs
     {
-        private const string PROJECT_ID = nameof(ProjectEditorPrefs) + nameof(PROJECT_ID);
-        private const string BUILD_NUM = nameof(ProjectEditorPrefs) + nameof(BUILD_NUM);
-
         private const string BUILD_LOCATION = nameof(ProjectEditorPrefs) + nameof(BUILD_LOCATION);
         private const string CROPPING_LEVEL = nameof(ProjectEditorPrefs) + nameof(CROPPING_LEVEL);
 
-        public static string ProjectId
-        {
-            get
-            {
-                if (!PlayerPrefs.HasKey(PROJECT_ID))
-                {
-                    PlayerPrefs.SetString(PROJECT_ID, Guid.NewGuid().ToString());
-                    PlayerPrefs.Save();
-                }
-                return PlayerPrefs.GetString(PROJECT_ID);
-            }
-        }
+        public static string ProjectId => Tour.Instance.Id;
 
         public static int BuildNum
         {
-            get
-            {
-                if (!PlayerPrefs.HasKey(BUILD_NUM))
-                {
-                    PlayerPrefs.SetInt(BUILD_NUM, 0);
-                }
-                return PlayerPrefs.GetInt(BUILD_NUM);
-            }
-            private set
-            {
-                PlayerPrefs.SetInt(BUILD_NUM, BuildNum + 1);
-                PlayerPrefs.Save();
-            }
+            get => Tour.Instance.BuidNum;
+            private set => Tour.Instance.BuidNum = value;
         }
         public static int IncrementBuildNum()
         {

@@ -27,6 +27,33 @@ public class Tour : MonoBehaviour
 
     private static Tour _instance;
 
+    [SerializeField]
+    [HideInInspector]
+    private string _id;
+    /// <summary>
+    /// Идентификатор тура, хранится в исходном коде конкретного тура для того, чтобы он был общим между всеми разраобтчиками
+    /// </summary>
+    public string Id => string.IsNullOrWhiteSpace(_id) ? _id = Guid.NewGuid().ToString() : _id;
+    [SerializeField]
+    [HideInInspector]
+    private int _buildNum;
+    /// <summary>
+    /// Порядковый номер сборки тура, используется для именования результирующий файлов (позволяет избежаьт кеширования на стороне клиента)
+    /// Не может быть уменьшен
+    /// </summary>
+    public int BuidNum
+    {
+        get => _buildNum;
+        set
+        {
+            if (value < _buildNum)
+            {
+                throw new ArgumentException("BuildNum can't minimize", nameof(value));
+            }
+            _buildNum = value;
+        }
+    }
+
     public string title = ">>place tour name here<<";
 
     public State firstState;
