@@ -7,7 +7,7 @@ using Packages.Excursion360_Builder.Editor.Extensions;
 
 #if UNITY_EDITOR
 using UnityEditor;
-using UnityEditor.Experimental.SceneManagement;
+
 
 public class StateGraphRenderer
 {
@@ -37,7 +37,7 @@ public class StateGraphRenderer
 
     public void RenderStateGraph(SceneView sceneview)
     {
-        if (PrefabStageUtility.GetCurrentPrefabStage() != null || EditorApplication.isPlaying)
+        if (UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage() != null || EditorApplication.isPlaying)
             return;
 
 
