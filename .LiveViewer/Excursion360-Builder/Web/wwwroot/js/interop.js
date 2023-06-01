@@ -15,6 +15,7 @@ connection.on("RotateCamera", function (rotationJson) {
 connection.on("OpenTour", function (tourJson) {
     if (typeof (tourJson) === "string") {
         const tour = JSON.parse(tourJson);
+        location.hash = "";
         document.viewer.show(tour);
         console.log(tour);
     } else {

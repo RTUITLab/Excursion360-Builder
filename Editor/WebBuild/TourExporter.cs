@@ -192,6 +192,10 @@ internal class TourExporter
             .ToArray();
         foreach (var (source, target) in renamePatterns)
         {
+            if (File.Exists(target))
+            {
+                File.Delete(target);
+            }
             File.Move(source, target);
         }
         indexFileContent = indexFileContent.Replace("client.js", $"{tourHash}.js");
