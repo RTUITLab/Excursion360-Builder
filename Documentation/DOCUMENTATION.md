@@ -12,6 +12,9 @@
 Склонируйте этот репозиторий в папку `Packages`. 
 
 Для тех, кто захочет что-нибудь менять в плагине, можно добавить его в `Packages` как **git submodule**.
+```bash
+git submodule add https://github.com/RTUITLab/Excursion360-Builder.git Packages/Excursion360-Builder
+```
 
 
 ## Понятия
