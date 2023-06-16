@@ -37,17 +37,24 @@ namespace Packages.Excursion360_Builder.Editor.HTTP
                         }
                         yield return null;
                     }
-                    if (w.isHttpError)
+                    if (w.result == UnityWebRequest.Result.ProtocolError)
                     {
                         error(w.downloadHandler.text);
                         yield break;
                     }
-                    if (w.isNetworkError)
+                    if (w.result == UnityWebRequest.Result.ConnectionError)
                     {
                         error(w.error);
                         yield break;
                     }
-                    done(w.downloadHandler);
+                    if (w.result == UnityWebRequest.Result.Success)
+                    {
+                        done(w.downloadHandler);
+                    }
+                    else
+                    {
+                        error(w.error);
+                    }
                 }
             }
             finally
@@ -89,17 +96,24 @@ namespace Packages.Excursion360_Builder.Editor.HTTP
                         }
                         yield return null;
                     }
-                    if (w.isHttpError)
+                    if (w.result == UnityWebRequest.Result.ProtocolError)
                     {
                         error(w.downloadHandler.text);
                         yield break;
                     }
-                    if (w.isNetworkError)
+                    if (w.result == UnityWebRequest.Result.ConnectionError)
                     {
                         error(w.error);
                         yield break;
                     }
-                    done(w.downloadHandler);
+                    if (w.result == UnityWebRequest.Result.Success)
+                    {
+                        done(w.downloadHandler);
+                    }
+                    else
+                    {
+                        error(w.error);
+                    }
                 }
             }
             finally

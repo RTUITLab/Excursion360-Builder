@@ -208,6 +208,10 @@ public class StateGraphRenderer
         var filedItems = state.GetComponents<FieldItem>();
         foreach (var item in filedItems)
         {
+            if (item.hideInDebug)
+            {
+                continue;
+            }
             if (item.vertices.Length < 2)
             {
                 Debug.LogWarning("Invalid field vertex count");
@@ -218,13 +222,16 @@ public class StateGraphRenderer
 
                 var position = state.gameObject.transform.position + vertex.Orientation * Vector3.forward;
                 Handles.color = Color.green;
-                Handles.DotHandleCap(
-                    0,
-                    position,
-                    Quaternion.identity,
-                    0.02f,
-                    EventType.Repaint
-                );
+                if (StateItemPlaceEditor.EditableItem != vertex) // не рисуется квадрат, чтобы можно было попасть точно в угол объекта
+                {
+                    Handles.DotHandleCap(
+                        0,
+                        position,
+                        Quaternion.identity,
+                        0.01f,
+                        EventType.Repaint
+                    );
+                }
                 Handles.Label(position, vertex.index.ToString(), _labelsEditModeStyle);
 
                 var preItem = item.vertices[i == 0 ? item.vertices.Length - 1 : i - 1];

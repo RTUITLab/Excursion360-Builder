@@ -14,6 +14,13 @@ namespace Excursion360_Builder.Shared.States.Items.Field
 
         public string title;
 
+        /// <summary>
+        /// Скрывать ли поле при отрисовке редактора.
+        /// </br>
+        /// Сделано как обратное, чтобы по умолчанию на всех существующих было false и не меняло поведение
+        /// </summary>
+        public bool hideInDebug;
+
         public Texture texture;
         public List<Texture> images = new List<Texture>();
         public List<VideoClip> videos = new List<VideoClip>();

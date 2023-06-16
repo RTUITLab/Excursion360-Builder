@@ -11,7 +11,7 @@ namespace Packages.tour_creator.Editor.WebBuild
     {
         public static string GetExportedId(this State state)
         {
-            return "state_" + state.GetInstanceID();
+            return "state_" + state.Id;
         }
 
         public static string GetExportedId(this FieldItem fieldItem)

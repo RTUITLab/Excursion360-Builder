@@ -103,21 +103,19 @@ internal class TourExporter
 
     public static Exported.Tour GenerateTour(string folderPath, GenerateTourOptions generateTourOptions)
     {
-        State firstState = Tour.Instance.firstState;
-        if (firstState == null)
+        if (Tour.Instance.firstState is null)
         {
             EditorUtility.DisplayDialog("Error", "First state is not selected!", "Ok");
             return null;
         }
 
         // Find all states
-        State[] states = GameObject.FindObjectsOfType<State>();
+        State[] states = GetStates();
         if (states.Length == 0)
         {
             EditorUtility.DisplayDialog("Error", "There is no states on this scene to export!", "Ok");
             return null;
         }
-
         Exported.Tour tour = PrepateTour(Tour.Instance);
 
         // Pre process states
@@ -154,6 +152,23 @@ internal class TourExporter
         PatchViewer(folderPath, tour);
         return tour;
     }
+
+    private static State[] GetStates()
+    {
+        var states = UnityEngine.Object.FindObjectsOfType<State>();
+        while (states.Length != states.Select(s => s.Id).Distinct().Count())
+        {
+            foreach (var stateWithDublicate in states
+                .GroupBy(s => s.Id)
+                .Where(g => g.Count() > 1)
+                .SelectMany(g => g))
+            {
+                stateWithDublicate.Id = Guid.NewGuid().ToString();
+            }
+        }
+        return states;
+    }
+
     /// <summary>
     /// Apply tour title and hash
     /// </summary>

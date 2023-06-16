@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Packages.Excursion360_Builder.Runtime;
+using System;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -22,6 +23,38 @@ public class State : MonoBehaviour
 
     private Renderer _renderer;
     private MaterialPropertyBlock _materialProperties;
+
+    [SerializeField] private string id;
+
+    /// <summary>
+    /// Идентификатор состояния, меняется сценой, в которой оно содержится
+    /// </summary>
+    public string Id
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                id = Guid.NewGuid().ToString();
+#if UNITY_EDITOR
+                EditorUtility.SetDirty(this);
+#endif
+                return id;
+            }
+            else
+            {
+                return id;
+            }
+        }
+
+        set
+        {
+#if UNITY_EDITOR
+            EditorUtility.SetDirty(this);
+#endif
+            id = value ?? Id;
+        }
+    }
 
     void Awake()
     {

@@ -1,5 +1,6 @@
 ﻿using Excursion360_Builder.Shared.States.Items.Field;
 using Packages.Excursion360_Builder.Editor;
+using Packages.Excursion360_Builder.Editor.EditorWrappers;
 using Packages.Excursion360_Builder.Editor.SpellCheck;
 using System;
 using System.Collections.Generic;
@@ -43,7 +44,7 @@ namespace Excursion360_Builder.Editor.States.Items
         {
             EditorGUI.indentLevel++;
 
-            Undo.RecordObject(fieldItem, "Edit group connection title");
+            Undo.RecordObject(fieldItem, "Edit field item");
             EditorGUILayout.BeginHorizontal();
 
             fieldItem.title = SpellCheckHintsContent.DrawTextField(
@@ -52,15 +53,19 @@ namespace Excursion360_Builder.Editor.States.Items
                 fieldItem.title,
                 repaintAction,
                 n => { fieldItem.title = n; });
-
-            //fieldItem.title = EditorGUILayout.TextField("Title:", fieldItem.title);
             if (Buttons.Delete())
             {
                 Undo.DestroyObjectImmediate(fieldItem);
             }
             EditorGUILayout.EndHorizontal();
 
-            RenderPositionVertexes(state, fieldItem);
+            fieldItem.hideInDebug = !EditorGUILayout.Toggle("Draw borders", !fieldItem.hideInDebug);
+
+            if (!fieldItem.hideInDebug)
+            {
+                RenderPositionVertexes(state, fieldItem);
+            }
+
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(EditorGUI.indentLevel * 15);
             fieldItem.attachmentsTabIndex = GUILayout.Toolbar(fieldItem.attachmentsTabIndex, new string[] {
@@ -70,30 +75,34 @@ namespace Excursion360_Builder.Editor.States.Items
                 "Audio"
             });
             EditorGUILayout.EndHorizontal();
-            var serializedObject = new SerializedObject(fieldItem);
 
-            switch (fieldItem.attachmentsTabIndex)
+            if (fieldItem.attachmentsTabIndex == 0)
             {
-                case 0:
-                    var imagesProperty = serializedObject.FindProperty(nameof(fieldItem.images));
-                    EditorGUILayout.PropertyField(imagesProperty);
-                    break;
-                case 1:
-                    var videosProperty = serializedObject.FindProperty(nameof(fieldItem.videos));
-                    EditorGUILayout.PropertyField(videosProperty, new GUIContent("ONLY FIRST VIDEO WILL BE USED! (now)"));
-                    break;
-                case 2:
-                    var textProperty = serializedObject.FindProperty(nameof(fieldItem.text));
-                    EditorGUILayout.PropertyField(textProperty);
-                    break;
-                case 3:
-                    var audiosProperty = serializedObject.FindProperty(nameof(fieldItem.audios));
-                    EditorGUILayout.PropertyField(audiosProperty, new GUIContent("ONLY FIRST AUDIO WILL BE USED! (now)"));
-                    break;
-                default:
-                    break;
+                fieldItem.images = ArrayEditor.EditList(fieldItem.images,
+                    (t, i) => (Texture)EditorGUILayout.ObjectField($"Image {i + 1}", t, typeof(Texture), true));
             }
-            serializedObject.ApplyModifiedProperties();
+            else
+            {
+                var serializedObject = new SerializedObject(fieldItem);
+                switch (fieldItem.attachmentsTabIndex)
+                {
+                    case 1:
+                        var videosProperty = serializedObject.FindProperty(nameof(fieldItem.videos));
+                        EditorGUILayout.PropertyField(videosProperty, new GUIContent("ONLY FIRST VIDEO WILL BE USED! (now)"));
+                        break;
+                    case 2:
+                        var textProperty = serializedObject.FindProperty(nameof(fieldItem.text));
+                        EditorGUILayout.PropertyField(textProperty);
+                        break;
+                    case 3:
+                        var audiosProperty = serializedObject.FindProperty(nameof(fieldItem.audios));
+                        EditorGUILayout.PropertyField(audiosProperty, new GUIContent("ONLY FIRST AUDIO WILL BE USED! (now)"));
+                        break;
+                    default:
+                        break;
+                }
+                serializedObject.ApplyModifiedProperties();
+            }
             EditorGUI.indentLevel--;
 
         }
@@ -106,7 +115,7 @@ namespace Excursion360_Builder.Editor.States.Items
             {
                 var vertex = fieldItem.vertices[i];
                 var value = StateItemPlaceEditor.EditableItem == (object)vertex;
-                Debug.Log($"item {i} value: {value}");
+
                 if (GUILayout.Toggle(value, vertex.index.ToString(), Styles.ToggleButtonStyleNormal))
                 {
                     // Clicked to true
