@@ -46,6 +46,10 @@ namespace Packages.Excursion360_Builder.Editor.States.Items
                 if (GUILayout.Button(overrideButtonText, "Button"))
                 {
                     connection.rotationAfterStepAngleOverridden = !connection.rotationAfterStepAngleOverridden;
+                    if (connection.rotationAfterStepAngleOverridden)
+                    {
+                        StartEditRotationOverride(state, connection);
+                    }
                 }
                 if (connection.rotationAfterStepAngleOverridden)
                 {
@@ -61,12 +65,7 @@ namespace Packages.Excursion360_Builder.Editor.States.Items
                         }
                         else
                         {
-                            TourEditor.ViewDirectionRenderer.SetEditing(
-                                state,
-                                () => connection.rotationAfterStepAngle,
-                                angle => connection.rotationAfterStepAngle = angle,
-                                connection
-                            );
+                            StartEditRotationOverride(state, connection);
                         }
                     }
                 }
@@ -90,13 +89,23 @@ namespace Packages.Excursion360_Builder.Editor.States.Items
                     }
                     else
                     {
+                        var newPair = new StateRotationAfterStepAnglePair
+                        {
+                            state = state,
+                            rotationAfterStepAngle = 0
+                        };
                         groupConnection
                             .rotationAfterStepAngles
-                            .Add(new StateRotationAfterStepAnglePair
-                            {
-                                state = state,
-                                rotationAfterStepAngle = 0
-                            });
+                            .Add(newPair);
+                        TourEditor.ViewDirectionRenderer.SetEditing(
+                                                        state,
+                                                        () => newPair.rotationAfterStepAngle,
+                                                        angle =>
+                                                        {
+                                                            newPair.rotationAfterStepAngle = angle;
+                                                        },
+                                                        groupConnection
+                                                    );
                     }
                 }
 
@@ -135,6 +144,16 @@ namespace Packages.Excursion360_Builder.Editor.States.Items
                 EditorGUILayout.EndHorizontal();
             }
 
+        }
+
+        private static void StartEditRotationOverride(State state, Connection connection)
+        {
+            TourEditor.ViewDirectionRenderer.SetEditing(
+                                            state,
+                                            () => connection.rotationAfterStepAngle,
+                                            angle => connection.rotationAfterStepAngle = angle,
+                                            connection
+                                        );
         }
     }
 }

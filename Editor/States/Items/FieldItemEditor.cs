@@ -23,11 +23,20 @@ namespace Excursion360_Builder.Editor.States.Items
             {
                 var fieldItem = Undo.AddComponent<FieldItem>(state.gameObject);
             }
+            var fieldItems = state.GetComponents<FieldItem>();
+
+            if (GUILayout.Button("Show/hide all"))
+            {
+                var targetState = !fieldItems.FirstOrDefault().hideInDebug;
+                foreach (var fieldItem in fieldItems)
+                {
+                    fieldItem.hideInDebug = targetState;
+                }
+            }
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
 
-            var fieldItems = state.GetComponents<FieldItem>();
             foreach (var fieldItem in fieldItems)
             {
                 var groupConnectionTitle = GetTitleStringOf(fieldItem.title);
