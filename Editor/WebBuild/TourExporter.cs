@@ -12,6 +12,7 @@ using Packages.Excursion360_Builder.Editor.WebBuild;
 using System.Text.RegularExpressions;
 using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using Packages.Excursion360_Builder.Editor;
+using System.Drawing;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -142,6 +143,7 @@ internal class TourExporter
             }
             catch (Exception ex)
             {
+                Debug.LogError(ex);
                 EditorUtility.DisplayDialog("Error", $"Error while exporting state {state.title}\n{ex.Message}", "Ok");
                 return null;
             }
@@ -338,9 +340,20 @@ internal class TourExporter
         switch (resourceHandlePath)
         {
             case ResourceHandlePath.CopyToDist:
-                var filename = fileName + Path.GetExtension(path);
-                File.Copy(path, Path.Combine(destination, filename));
-                return filename;
+                var extension = Path.GetExtension(path);
+                var sourceFileName = fileName + extension;
+                var destinationFilePath = Path.Combine(destination, sourceFileName);
+                if (extension.ToUpperInvariant() == ".JPG")
+                {
+                    using var image = Image.FromFile(path).FixOrientation();
+                    image.SaveCompressed(destinationFilePath, 30);
+                }
+                else
+                {
+
+                    File.Copy(path, destinationFilePath);
+                }
+                return sourceFileName;
             case ResourceHandlePath.PublishPath:
                 if (path.StartsWith("Packages"))
                 {

@@ -1,7 +1,9 @@
 ﻿using Packages.Excursion360_Builder.Editor.Protocol;
+using Packages.tour_creator.Editor.WebBuild;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -25,9 +27,9 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
                 Directory.Delete(targetFolderPath, true);
             }
             Directory.CreateDirectory(targetFolderPath);
-            using (var sourceImage = new Bitmap(Image.FromFile(sourceImagePath)))
+            using (var sourceImage = Image.FromFile(sourceImagePath).FixOrientation())
             {
-                var lowQualityImage = CreateLoqQualityImage(sourceImage, targetFolderPath);
+                var lowQualityImage = CreateLowQualityImage(sourceImage, targetFolderPath);
 
                 var partHeight = (int)Math.Floor((double)sourceImage.Height / partsCount);
                 var partWidth = (int)Math.Floor((double)sourceImage.Width / partsCount);
@@ -77,7 +79,7 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
                                 drawerOnNewImage.DrawImage(sourceImage, dest, src, GraphicsUnit.Pixel);
                                 var imageRoute = $"{num++}.jpg";
                                 var imageLocation = Path.Combine(targetFolderPath, imageRoute);
-                                targetImage.Save(imageLocation);
+                                targetImage.SaveCompressed(imageLocation);
                                 rectangles.Add(new ImagePart(src.X, src.Y, src.Width, src.Height, imageRoute, new FileInfo(imageLocation).Length));
                             }
                         }
@@ -93,7 +95,7 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
             }
         }
 
-        private static ImagePart CreateAllWidthRect(Bitmap sourceImage, string targetLocation, int yStart, int height, string name)
+        private static ImagePart CreateAllWidthRect(Image sourceImage, string targetLocation, int yStart, int height, string name)
         {
             using (var targetImage = new Bitmap(sourceImage.Width, height))
             {
@@ -110,7 +112,7 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
                     );
                     var imagePath = $"{name}.jpg";
                     var imageLocation = Path.Combine(targetLocation, imagePath);
-                    targetImage.Save(imageLocation);
+                    targetImage.SaveCompressed(imageLocation, quality: 30, maxTextureSize: -1);
 
                     var allWithRect = new ImagePart(0, yStart, targetImage.Width, height, imagePath, new FileInfo(imageLocation).Length);
                     return allWithRect;
@@ -118,27 +120,12 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
             }
         }
 
-        private static ImagePart CreateLoqQualityImage(Bitmap sourceImage, string targetLocation, float minifier = 8)
+        private static ImagePart CreateLowQualityImage(Image sourceImage, string targetLocation)
         {
-            using (var targetImage = new Bitmap((int)(sourceImage.Width / minifier), (int)(sourceImage.Height / minifier)))
-            {
-                targetImage.SetResolution(sourceImage.HorizontalResolution / minifier, sourceImage.VerticalResolution / minifier);
-                using (var drawerOnNewImage = System.Drawing.Graphics.FromImage(targetImage))
-                {
-                    drawerOnNewImage.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                    drawerOnNewImage.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    drawerOnNewImage.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
-                    drawerOnNewImage.DrawImage(sourceImage,
-                      new Rectangle(0, 0, targetImage.Width, targetImage.Height),
-                      new Rectangle(0, 0, sourceImage.Width, sourceImage.Height),
-                      GraphicsUnit.Pixel
-                    );
-                    var imageRoute = $"lq.jpg";
-                    var imageLocation = Path.Combine(targetLocation, imageRoute);
-                    targetImage.Save(imageLocation);
-                    return new ImagePart(0, 0, targetImage.Width, targetImage.Height, "lq.jpg", new FileInfo(imageLocation).Length);
-                }
-            }
+            var imageRoute = $"lq.jpg";
+            var imageLocation = Path.Combine(targetLocation, imageRoute);
+            var size = sourceImage.SaveCompressed(imageLocation);
+            return new ImagePart(0, 0, size.Width, size.Height, "lq.jpg", new FileInfo(imageLocation).Length);
         }
     }
 }
