@@ -153,7 +153,7 @@ namespace Packages.Excursion360_Builder.Editor.ImageCropEditor
                     || (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.S))
                 {
                     var sourcePath = AssetDatabase.GetAssetPath(image);
-                    var newFileName = Path.ChangeExtension(Path.GetFileNameWithoutExtension(sourcePath) + "_deskew", Path.GetExtension(sourcePath));
+                    var newFileName = Path.GetFileNameWithoutExtension(sourcePath) + "_deskew" + Path.GetExtension(sourcePath);
                     var destPath = Path.Combine(Path.GetDirectoryName(sourcePath), newFileName);
                     Debug.Log(destPath);
                     if (File.Exists(destPath))
