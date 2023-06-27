@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Magick.NET-Q16-x64</id>
+    <version>13.1.3</version>
+    <title>Magick.NET-Q16-x64</title>
+    <authors>Dirk Lemstra</authors>
+    <owners>Dirk Lemstra</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache-2.0</license>
+    <licenseUrl>https://licenses.nuget.org/Apache-2.0</licenseUrl>
+    <icon>Magick.NET.icon.png</icon>
+    <readme>docs\Readme.md</readme>
+    <projectUrl>https://github.com/dlemstra/Magick.NET</projectUrl>
+    <description>ImageMagick is a powerful image manipulation library that supports over 100 major file formats (not including sub-formats). With Magick.NET you can use ImageMagick without having to install ImageMagick on your server or desktop. Visit https://github.com/dlemstra/Magick.NET/tree/main/docs before installing to help you decide the best version.</description>
+    <summary>A .NET API to the ImageMagick image-processing library for Desktop and Web.</summary>
+    <releaseNotes>https://github.com/dlemstra/Magick.NET/releases/tag/13.1.3</releaseNotes>
+    <copyright>Copyright 2013-2023 Dirk Lemstra</copyright>
+    <tags>ImageMagick Magick.NET Image Convert Resize Draw Effects</tags>
+    <repository type="git" url="https://github.com/dlemstra/Magick.NET" branch="main" commit="593c8479a6859f4bcf69b7d926085659c6715f31" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Magick.NET.Core" version="13.1.3" />
+      </group>
+      <group targetFramework=".NETStandard2.1">
+        <dependency id="Magick.NET.Core" version="13.1.3" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

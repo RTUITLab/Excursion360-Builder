@@ -5,6 +5,7 @@ using Packages.Excursion360_Builder.Editor.WebBuild;
 using Packages.Excursion360_Builder.Editor.SceneRenderers;
 using System;
 using Packages.Excursion360_Builder.Editor.SpellCheck;
+using Packages.Excursion360_Builder.Editor.ImageCropEditor;
 
 #if UNITY_EDITOR
 using Packages.Excursion360_Builder.Editor.LivePreview;
@@ -41,8 +42,7 @@ public class TourEditor
     private const string MENU_ITEM_SHOW_LABELS = GROUP_NAME + "/Show Labels";
     private const string MENU_ITEM_SHOW_ITEMS = GROUP_NAME + "/Show Items";
 
-    private const string MENU_ITEM_BUILD_DESKTOP = GROUP_NAME + "/Build For Desktop (TODO)";
-    private const string MENU_ITEM_BUILD_ANDROID = GROUP_NAME + "/Build For Android (TODO)";
+    private const string MENU_ITEM_IMAGE_EDITOR = GROUP_NAME + "/Image Crop";
     private const string MENU_ITEM_BUILD_WEB = GROUP_NAME + "/Build tour";
     
     
@@ -160,6 +160,12 @@ public class TourEditor
     //    return;
     //    ApplicationBuilder.Build(ApplicationBuilder.BuildType.Android);
     //}
+
+    [MenuItem(MENU_ITEM_IMAGE_EDITOR, false, 42)]
+    private static void MenuItemImageCrop()
+    {
+        EditorWindow.GetWindow<ImageCropWindowEditor>("Image crop");
+    }
 
     [MenuItem(MENU_ITEM_BUILD_WEB, false, 42)]
     private static void MenuItemBuildWeb()
