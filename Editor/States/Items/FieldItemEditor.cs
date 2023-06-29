@@ -19,10 +19,7 @@ namespace Excursion360_Builder.Editor.States.Items
             EditorGUI.indentLevel++;
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(EditorGUI.indentLevel * 15);
-            if (GUILayout.Button("Add"))
-            {
-                var fieldItem = Undo.AddComponent<FieldItem>(state.gameObject);
-            }
+            
             var fieldItems = state.GetComponents<FieldItem>();
 
             if (GUILayout.Button("Show/hide all"))
@@ -45,6 +42,11 @@ namespace Excursion360_Builder.Editor.States.Items
                 {
                     DrawFieldItem(state, fieldItem, repaintAction);
                 }
+            }
+            if (GUILayout.Button("Add"))
+            {
+                var created = Undo.AddComponent<FieldItem>(state.gameObject);
+                created.isOpened = true;
             }
             EditorGUI.indentLevel--;
         }
@@ -112,6 +114,7 @@ namespace Excursion360_Builder.Editor.States.Items
                 }
                 serializedObject.ApplyModifiedProperties();
             }
+            
             EditorGUI.indentLevel--;
 
         }
