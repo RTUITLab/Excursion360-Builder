@@ -36,7 +36,12 @@ namespace Excursion360_Builder.Editor.States.Items
 
             foreach (var fieldItem in fieldItems)
             {
-                var groupConnectionTitle = GetTitleStringOf(fieldItem.title);
+                var title = fieldItem.title ?? "";
+                if (fieldItem.HasNoContent)
+                {
+                    title = "[!] " + title;
+                }
+                var groupConnectionTitle = GetTitleStringOf(title);
                 fieldItem.isOpened = EditorGUILayout.Foldout(fieldItem.isOpened, groupConnectionTitle, true);
                 if (fieldItem.isOpened)
                 {

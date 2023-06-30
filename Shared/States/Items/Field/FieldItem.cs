@@ -50,6 +50,12 @@ namespace Excursion360_Builder.Shared.States.Items.Field
 #if UNITY_EDITOR
         public bool isOpened;
         public int attachmentsTabIndex;
+
+        public bool HasNoContent =>
+            (images.Count == 0 || images.Any(i => !i)) &&
+            (videos.Count == 0 || videos.Any(v => !v)) &&
+            (audios.Count == 0 || audios.Any(a => !a)) &&
+            string.IsNullOrWhiteSpace(text);
 #endif
     }
 }
