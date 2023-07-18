@@ -21,6 +21,8 @@ public class State : MonoBehaviour
     [SpellCheck]
     public string title;
 
+    public BackgroundAudio backgroundAudio;
+
     private Renderer _renderer;
     private MaterialPropertyBlock _materialProperties;
 

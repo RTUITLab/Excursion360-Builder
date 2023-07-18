@@ -16,6 +16,7 @@ namespace Packages.tour_creator.Editor.Protocol
         public string url;
         public string croppedImageUrl;
         public string type;
+        public string backgroundAudioId;
         public Quaternion pictureRotation;
         public List<StateLink> links;
         public List<GroupStateLink> groupLinks;

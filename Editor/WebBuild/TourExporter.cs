@@ -13,6 +13,8 @@ using System.Text.RegularExpressions;
 using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using Packages.Excursion360_Builder.Editor;
 using System.Drawing;
+using static UnityEditor.VersionControl.Asset;
+using Packages.Excursion360_Builder.Editor.Protocol;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -111,13 +113,17 @@ internal class TourExporter
         }
 
         // Find all states
-        State[] states = GetStates();
+        var states = GetStates();
         if (states.Length == 0)
         {
             EditorUtility.DisplayDialog("Error", "There is no states on this scene to export!", "Ok");
             return null;
         }
-        Exported.Tour tour = PrepateTour(Tour.Instance);
+
+        var tour = PrepateTour(Tour.Instance);
+
+        tour.backgroundAudios = ExportAudios(folderPath, tour, generateTourOptions.ResourceHandlePath);
+        
 
         // Pre process states
         UpdateProcess(0, states.Length, "Exporting", "");
@@ -154,6 +160,37 @@ internal class TourExporter
         PatchViewer(folderPath, tour);
         return tour;
     }
+    private static List<BackgroundAudioInfo> ExportAudios(string folderPath, Exported.Tour tour, ResourceHandlePath resourceHandlePath)
+    {
+        var result = new List<BackgroundAudioInfo>();
+        var audios = GetBackgroundAudios();
+        if (audios.Length == 0)
+        {
+            return result;
+        }
+        UpdateProcess(0, audios.Length, "Exporting audios", "");
+        var audiosDir = Path.Combine(folderPath, "background_audios");
+        Directory.CreateDirectory(audiosDir);
+        for (int i = 0; i < audios.Length; i++)
+        {
+            var audioPack = audios[i];
+            var audiopackDir = Path.Combine(audiosDir, audioPack.Id);
+            Directory.CreateDirectory(audiopackDir);
+            var info = new BackgroundAudioInfo
+            {
+                id = audioPack.Id,
+                audios = new()
+            };
+            result.Add(info);
+            foreach (var audio in audioPack.audios)
+            {
+                var audioFilename = ExportResource(audio, audiopackDir, audio.name, resourceHandlePath);
+                UpdateProcess(i + 1, audios.Length, "Exporting", $"{i + 1}/{audios.Length}: {audio.name}");
+                info.audios.Add($"background_audios/{audioPack.Id}/{audioFilename}");
+            }
+        }
+        return result;
+    }
 
     private static State[] GetStates()
     {
@@ -169,6 +206,22 @@ internal class TourExporter
             }
         }
         return states;
+    }
+
+    private static BackgroundAudio[] GetBackgroundAudios()
+    {
+        var audios = UnityEngine.Object.FindObjectsOfType<BackgroundAudio>();
+        while (audios.Length != audios.Select(s => s.Id).Distinct().Count())
+        {
+            foreach (var audioWithDublicate in audios
+                .GroupBy(s => s.Id)
+                .Where(g => g.Count() > 1)
+                .SelectMany(g => g))
+            {
+                audioWithDublicate.Id = Guid.NewGuid().ToString();
+            }
+        }
+        return audios;
     }
 
     /// <summary>
@@ -286,7 +339,8 @@ internal class TourExporter
             pictureRotation = state.transform.rotation,
             links = GetLinks(state),
             groupLinks = GetGroupLinks(state),
-            fieldItems = GetFieldItems(state, folderPath, resourceHandlePath)
+            fieldItems = GetFieldItems(state, folderPath, resourceHandlePath),
+            backgroundAudioId = state.backgroundAudio?.Id
         };
         return true;
     }
@@ -350,7 +404,6 @@ internal class TourExporter
                 }
                 else
                 {
-
                     File.Copy(path, destinationFilePath);
                 }
                 return sourceFileName;

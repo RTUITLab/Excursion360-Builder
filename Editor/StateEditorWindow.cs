@@ -133,6 +133,8 @@ public class StateEditorWindow : EditorWindow
 
         EditorGUILayout.Space();
 
+        state.backgroundAudio = (BackgroundAudio)EditorGUILayout.ObjectField(state.backgroundAudio, typeof(BackgroundAudio), true);
+
         // Draw panorama preview
 
         var previewTexture = state.GetComponent<TextureSource>().LoadedTexture;

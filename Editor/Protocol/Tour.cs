@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Packages.Excursion360_Builder.Editor.Protocol;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,6 +28,7 @@ namespace Packages.tour_creator.Editor.Protocol
 
         public string firstStateId;
         public List<State> states;
+        public List<BackgroundAudioInfo> backgroundAudios;
         public Color[] colorSchemes;
     }
 }
