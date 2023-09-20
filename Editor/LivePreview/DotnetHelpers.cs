@@ -58,20 +58,20 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                                 $"-c Release " +
                                 $"--self-contained true " +
                                 $"-p:PublishSingleFile=true " +
-                                $"-p:PublishTrimmed=true" +
-                                $"-p:DebugType=None" +
+                                $"-p:PublishTrimmed=true " +
+                                $"-p:DebugType=None " +
                                 $"-p:DebugSymbols=False";
                 var proc = Process.Start(new ProcessStartInfo
                 {
                     FileName = "dotnet",
                     Arguments = arguments,
-                    UseShellExecute = true,
-                    RedirectStandardOutput = false
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
                 });
                 proc.WaitForExit();
                 if (proc.ExitCode != 0)
                 {
-                    throw new Exception("Can't build live preview");
+                    throw new Exception($"Can't build live preview {proc.StandardOutput.ReadToEnd()}");
                 }
                 TourExporter.UnpackViewer(selectedBuildPack, Path.Combine(outputFolder, "wwwroot"));
             }
