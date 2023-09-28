@@ -38,6 +38,6 @@ public class BackgroundAudio : MonoBehaviour
         }
     }
 
-
+    public bool loopAudios;
     public AudioClip[] audios;
 }

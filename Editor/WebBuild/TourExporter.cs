@@ -179,7 +179,8 @@ internal class TourExporter
             var info = new BackgroundAudioInfo
             {
                 id = audioPack.Id,
-                audios = new()
+                loopAudios = audioPack.loopAudios,
+                audios = new(),
             };
             result.Add(info);
             foreach (var audio in audioPack.audios)

@@ -10,6 +10,7 @@ namespace Packages.Excursion360_Builder.Editor.Protocol
     public class BackgroundAudioInfo
     {
         public string id;
+        public bool loopAudios;
         public List<string> audios;
     }
 }
