@@ -66,6 +66,9 @@ public class Tour : MonoBehaviour
     [Tooltip("Use SVG icon")]
     public DefaultAsset logoTexture;
 
+    public Texture2D bottomImageTexture;
+    public double bottomImageSize = 5;
+
     private void OnValidate()
     {
         ValidateTexture();

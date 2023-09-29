@@ -85,12 +85,19 @@ internal class TourExporter
                 return;
             }
 
-            CreateConfigFile(excursionFolder, logoFileName);
             ProjectEditorPrefs.IncrementBuildNum();
-            Exported.Tour tour = GenerateTour(excursionFolder, exportOptions);
+            CreateConfigFile(excursionFolder, logoFileName, exportOptions.ResourceHandlePath);
 
-            // Serialize and write
-            File.WriteAllText(excursionFolder + "/tour.json", JsonUtility.ToJson(tour, true));
+            var tour = GenerateTour(excursionFolder, exportOptions);
+            if (tour != null)
+            {
+                // Serialize and write
+                File.WriteAllText(excursionFolder + "/tour.json", JsonUtility.ToJson(tour, true));
+            } else
+            {
+                EditorUtility.DisplayDialog("Error", $"No tour exported", "Ok");
+            }
+
         }
         catch (Exception ex)
         {
@@ -123,7 +130,7 @@ internal class TourExporter
         var tour = PrepateTour(Tour.Instance);
 
         tour.backgroundAudios = ExportAudios(folderPath, tour, generateTourOptions.ResourceHandlePath);
-        
+
 
         // Pre process states
         UpdateProcess(0, states.Length, "Exporting", "");
@@ -473,13 +480,22 @@ internal class TourExporter
         return stateLinks;
     }
 
-    private static void CreateConfigFile(string folderPath, string logoFileName)
+    private static void CreateConfigFile(string folderPath, string logoFileName, ResourceHandlePath resourceHandlePath)
     {
         var configuration = new Configuration
         {
             logoUrl = logoFileName,
             sceneUrl = ""
         };
+        if (Tour.Instance.bottomImageTexture)
+        {
+            var path = ExportResource(Tour.Instance.bottomImageTexture, folderPath, "bottom_image", resourceHandlePath);
+            configuration.bottomImage = new BottomImageConfiguration
+            {
+                size = Math.Max(0.1, Tour.Instance.bottomImageSize),
+                url = path,
+            };
+        }
         var stringConfig = JsonUtility.ToJson(configuration);
         File.WriteAllText(Path.Combine(folderPath, "config.json"), stringConfig);
     }
