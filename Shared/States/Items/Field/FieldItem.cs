@@ -13,6 +13,7 @@ namespace Excursion360_Builder.Shared.States.Items.Field
         public FieldVertex[] vertices;
 
         public string title;
+        public string debugTitle;
 
         /// <summary>
         /// Скрывать ли поле при отрисовке редактора.

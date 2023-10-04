@@ -41,8 +41,12 @@ namespace Excursion360_Builder.Editor.States.Items
                 {
                     title = "[!] " + title;
                 }
-                var groupConnectionTitle = GetTitleStringOf(title);
-                fieldItem.isOpened = EditorGUILayout.Foldout(fieldItem.isOpened, groupConnectionTitle, true);
+                var fieldItemTitle = GetTitleStringOf(title);
+                if (!string.IsNullOrEmpty(fieldItem.debugTitle))
+                {
+                    fieldItemTitle = $"[{fieldItem.debugTitle}] {fieldItemTitle}";
+                }
+                fieldItem.isOpened = EditorGUILayout.Foldout(fieldItem.isOpened, fieldItemTitle, true);
                 if (fieldItem.isOpened)
                 {
                     DrawFieldItem(state, fieldItem, repaintAction);
@@ -74,6 +78,12 @@ namespace Excursion360_Builder.Editor.States.Items
                 Undo.DestroyObjectImmediate(fieldItem);
             }
             EditorGUILayout.EndHorizontal();
+            fieldItem.debugTitle = SpellCheckHintsContent.DrawTextField(
+                $"{fieldItem.GetInstanceID()}_{nameof(fieldItem.debugTitle)}",
+                "Debug title",
+                fieldItem.debugTitle,
+                repaintAction,
+                n => { fieldItem.debugTitle = n; });
 
             fieldItem.hideInDebug = !EditorGUILayout.Toggle("Draw borders", !fieldItem.hideInDebug);
 
