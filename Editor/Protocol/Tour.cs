@@ -27,6 +27,7 @@ namespace Packages.tour_creator.Editor.Protocol
         public string tourProtocolVersion;
 
         public string firstStateId;
+        public bool fastReturnToFirstStateEnabled;
         public List<State> states;
         public List<BackgroundAudioInfo> backgroundAudios;
         public Color[] colorSchemes;

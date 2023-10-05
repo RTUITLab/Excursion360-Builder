@@ -57,6 +57,7 @@ public class Tour : MonoBehaviour
     public string title = ">>place tour name here<<";
 
     public State firstState;
+    public bool fastReturnToFirstStateEnabled;
 
     public ConnectionMarker connectionMarkerPrefab;
     public GroupConnectionMarker groupConnectionMarkerPrefab;

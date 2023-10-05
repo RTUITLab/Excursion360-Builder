@@ -55,6 +55,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                     return;
                 }
                 tour.firstStateId = state.GetExportedId();
+                tour.fastReturnToFirstStateEnabled = false; // Нет необходимости в возврате на время тестирования
                 BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.SendCameraRotation(SceneView.lastActiveSceneView.rotation));
                 BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.OpenTour(tour));
             }

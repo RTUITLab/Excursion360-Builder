@@ -290,6 +290,7 @@ internal class TourExporter
             versionNum = ProjectEditorPrefs.BuildNum,
             tourProtocolVersion = "v0.9",
             firstStateId = tour.firstState.GetExportedId(),
+            fastReturnToFirstStateEnabled = tour.fastReturnToFirstStateEnabled,
             colorSchemes = tour.colorSchemes.Select(cs => cs.color).ToArray(),
             states = new List<Exported.State>(),
         };
