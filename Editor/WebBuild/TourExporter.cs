@@ -345,13 +345,21 @@ internal class TourExporter
             url = url,
             croppedImageUrl = croppedImageUrl,
             type = textureSource.SourceType.ToString().ToLower(),
-            pictureRotation = state.transform.rotation,
+            pictureRotation = FormatToBabylonJS(state.transform.rotation),
             links = GetLinks(state),
             groupLinks = GetGroupLinks(state),
             fieldItems = GetFieldItems(state, folderPath, resourceHandlePath),
             backgroundAudioId = state.backgroundAudio?.Id
         };
         return true;
+    }
+
+    private static Quaternion FormatToBabylonJS(Quaternion q)
+    {
+        var euler = q.eulerAngles;
+        euler.x *= -1;
+        euler.z *= -1;
+        return Quaternion.Euler(euler);
     }
 
     private static List<Exported.FieldItem> GetFieldItems(State state, string folderPath,
