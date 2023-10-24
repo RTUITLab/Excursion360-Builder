@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Packages.tour_creator.Editor.Protocol
 {
+    public enum GroupConnectionProtocolViewMode
+    {
+        ShowByClickOnItem,
+        AlwaysShowOnlyButtons,
+    }
     [Serializable]
     public class GroupStateLink : StateItem
     {
         public string title;
         public List<string> stateIds;
         public List<string> infos;
+        public GroupConnectionProtocolViewMode viewMode;
         public List<GroupStateLinkRotationOverride> groupStateRotationOverrides;
         public float minimizeScale;
     }

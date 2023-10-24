@@ -42,6 +42,9 @@ class GroupConnectionEditor : EditorBase
                 return;
             }
             EditorGUILayout.EndHorizontal();
+
+            groupConnection.viewMode = (GroupConnectionViewMode)EditorGUILayout.EnumPopup("view mode", groupConnection.viewMode);
+
             var buttonStyle = Styles.ToggleButtonStyleNormal;
             if (StateItemPlaceEditor.EditableItem == (object)groupConnection)
                 buttonStyle = Styles.ToggleButtonStyleToggled;
@@ -149,7 +152,7 @@ class GroupConnectionEditor : EditorBase
                     break;
                 }
                 EditorGUILayout.EndHorizontal();
-                
+
             }
             EditorGUILayout.BeginHorizontal();
             groupConnection.minimizeScale = EditorGUILayout.Slider(

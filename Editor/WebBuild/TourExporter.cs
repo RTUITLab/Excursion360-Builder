@@ -15,6 +15,8 @@ using Packages.Excursion360_Builder.Editor;
 using System.Drawing;
 using static UnityEditor.VersionControl.Asset;
 using Packages.Excursion360_Builder.Editor.Protocol;
+using Packages.tour_creator.Editor.Protocol;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -471,6 +473,12 @@ internal class TourExporter
             stateLinks.Add(new Exported.GroupStateLink()
             {
                 title = connection.title,
+                viewMode = connection.viewMode switch
+                {
+                    GroupConnectionViewMode.ShowByClickOnItem => GroupConnectionProtocolViewMode.ShowByClickOnItem,
+                    GroupConnectionViewMode.AlwaysShowOnlyButtons => GroupConnectionProtocolViewMode.AlwaysShowOnlyButtons,
+                    _ => throw new ArgumentException($"{connection.viewMode} type is not supported")
+                },
                 rotation = connection.Orientation,
                 stateIds = connection.states.Select(s => s.GetExportedId()).ToList(),
                 infos = connection.infos.ToList(),
