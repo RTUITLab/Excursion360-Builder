@@ -369,7 +369,7 @@ internal class TourExporter
     {
         var fieldItems = new List<Exported.FieldItem>();
 
-        var unityFieldConnections = state.GetComponents<FieldItem>();
+        var unityFieldConnections = state.GetComponents<Excursion360_Builder.Shared.States.Items.Field.FieldItem>();
 
         foreach (var fieldItem in unityFieldConnections)
         {
