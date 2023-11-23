@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Packages.tour_creator.Editor.Protocol
 {
+    [Serializable]
     public enum GroupConnectionProtocolViewMode
     {
         ShowByClickOnItem,
