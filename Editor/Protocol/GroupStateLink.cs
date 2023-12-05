@@ -17,7 +17,14 @@ namespace Packages.tour_creator.Editor.Protocol
         public List<string> infos;
         public GroupConnectionProtocolViewMode viewMode;
         public List<GroupStateLinkRotationOverride> groupStateRotationOverrides;
+        /// <summary>
+        /// коеффициент уменьшения размера рамки
+        /// </summary>
         public float minimizeScale;
+        /// <summary>
+        /// Позиция заголовка группового перехода относительно точки <see cref="StateItem.rotation"/>
+        /// </summary>
+        public float titleYPosition;
     }
 
     [Serializable]

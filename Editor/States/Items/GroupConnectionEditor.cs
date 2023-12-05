@@ -155,10 +155,16 @@ class GroupConnectionEditor : EditorBase
 
             }
             EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginVertical();
             groupConnection.minimizeScale = EditorGUILayout.Slider(
                 "minimize scale",
                 groupConnection.minimizeScale,
                 1, 5);
+            groupConnection.titleYPosition = EditorGUILayout.Slider(
+                "title y position",
+                groupConnection.titleYPosition,
+                0, 2);
+            EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
             EditorGUI.indentLevel--;
             EditorGUI.indentLevel--;

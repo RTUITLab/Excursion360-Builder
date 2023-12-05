@@ -10,6 +10,7 @@ public class GroupConnection : MonoBehaviourStateItem
     public List<State> states = new();
     public List<string> infos = new();
     public float minimizeScale;
+    public float titleYPosition = 2;
     public List<StateRotationAfterStepAnglePair> rotationAfterStepAngles = new List<StateRotationAfterStepAnglePair>();
 }
 

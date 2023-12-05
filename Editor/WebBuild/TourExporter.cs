@@ -514,6 +514,7 @@ internal class TourExporter
                 stateIds = connection.states.Select(s => s.GetExportedId()).ToList(),
                 infos = connection.infos.ToList(),
                 minimizeScale = connection.minimizeScale,
+                titleYPosition = connection.titleYPosition,
                 groupStateRotationOverrides = connection
                     .rotationAfterStepAngles
                     .Select(p => new Exported.GroupStateLinkRotationOverride
