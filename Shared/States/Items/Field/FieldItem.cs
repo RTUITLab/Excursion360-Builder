@@ -8,6 +8,9 @@ using UnityEngine.Video;
 
 namespace Excursion360_Builder.Shared.States.Items.Field
 {
+    /// <summary>
+    /// Интерактивная область, при нажатии раскрывается её наполнение
+    /// </summary>
     public class FieldItem : MonoBehaviour
     {
         public FieldVertex[] vertices;

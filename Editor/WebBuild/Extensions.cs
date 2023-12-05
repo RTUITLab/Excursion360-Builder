@@ -23,6 +23,11 @@ namespace Packages.tour_creator.Editor.WebBuild
             return "field_item_" + fieldItem.GetInstanceID();
         }
 
+        public static string GetExportedId(this ContentItem contentItem)
+        {
+            return "content_item_" + contentItem.GetInstanceID();
+        }
+
 
         private static ImageCodecInfo JpegCodecInfo => ImageCodecInfo.GetImageEncoders().Single(e => e.MimeType == "image/jpeg");
 

@@ -351,6 +351,7 @@ internal class TourExporter
             links = GetLinks(state),
             groupLinks = GetGroupLinks(state),
             fieldItems = GetFieldItems(state, folderPath, resourceHandlePath),
+            contentItems = GetContentItems(state, folderPath, resourceHandlePath),
             backgroundAudioId = state.backgroundAudio?.Id
         };
         return true;
@@ -404,6 +405,36 @@ internal class TourExporter
         }
 
         return fieldItems;
+    }
+
+    private static List<Exported.ContentItem> GetContentItems(State state, string folderPath,
+      ResourceHandlePath resourceHandlePath)
+    {
+        var contentItems = new List<Exported.ContentItem>();
+
+        var unityContentItems = state.GetComponents<ContentItem>();
+
+        foreach (var contentItem in unityContentItems)
+        {
+            var item = new Exported.ContentItem
+            {
+                orientation = contentItem.Orientation,
+                multipler = contentItem.multipler,
+            };
+            if (contentItem is ImageContentItem imageContentItem)
+            {
+                item.image = ExportResource(
+                        imageContentItem.image,
+                        folderPath,
+                        $"{contentItem.GetExportedId()}",
+                        resourceHandlePath);
+                item.contentType = ContentItemType.Image;
+            }
+
+            contentItems.Add(item);
+        }
+
+        return contentItems;
     }
 
     private static string ExportResource(UnityEngine.Object resourceToExport, string destination, string fileName,

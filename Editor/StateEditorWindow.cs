@@ -25,12 +25,14 @@ public class StateEditorWindow : EditorWindow
 
     private readonly GroupConnectionEditor groupConnectionEditor = new GroupConnectionEditor();
     private readonly FieldItemEditor fieldItemEditor = new FieldItemEditor();
+    private readonly ContentItemEditor contentItemEditor = new ContentItemEditor();
     private readonly ConnectionsToStateEditor connectionsToStateEditor = new ConnectionsToStateEditor();
 
     private bool connectionsFromOpened = true;
     private bool connectionsToOpened = true;
     private bool groupConnectionsOpened = true;
     private bool fieldItemsOpened = true;
+    private bool contentItemsOpened = true;
 
     private void OnEnable()
     {
@@ -256,6 +258,12 @@ public class StateEditorWindow : EditorWindow
         if (fieldItemsOpened)
         {
             fieldItemEditor.Draw(state, Repaint);
+        }
+
+        contentItemsOpened = EditorGUILayout.Foldout(contentItemsOpened, "Content items", true);
+        if (contentItemsOpened)
+        {
+            contentItemEditor.Draw(state, Repaint);
         }
         EditorGUILayout.EndScrollView();
 

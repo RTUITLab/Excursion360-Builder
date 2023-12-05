@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Packages.tour_creator.Editor.Protocol
@@ -21,5 +18,6 @@ namespace Packages.tour_creator.Editor.Protocol
         public List<StateLink> links;
         public List<GroupStateLink> groupLinks;
         public List<FieldItem> fieldItems;
+        public List<ContentItem> contentItems;
     }
 }

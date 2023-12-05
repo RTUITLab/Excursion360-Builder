@@ -130,6 +130,7 @@ public class StateGraphRenderer
         var items = state.GetComponents<ContentItem>();
         foreach (var item in items)
         {
+            Debug.Log("Found item!");
             var itemPosition = item.transform.position + item.Orientation * Vector3.forward;
             Handles.color = Color.cyan;
             Handles.DotHandleCap(
