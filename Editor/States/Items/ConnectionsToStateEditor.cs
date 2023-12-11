@@ -9,8 +9,8 @@ namespace Packages.Excursion360_Builder.Editor.States.Items
 {
     class ConnectionsToStateEditor
     {
-        private readonly Dictionary<State, Connection[]> connectionsTo = new Dictionary<State, Connection[]>();
-        private readonly Dictionary<State, GroupConnection[]> groupConnectionsTo = new Dictionary<State, GroupConnection[]>();
+        private readonly Dictionary<State, Connection[]> connectionsTo = new();
+        private readonly Dictionary<State, GroupConnection[]> groupConnectionsTo = new();
 
 
         private Connection[] LoadConnections(State state)

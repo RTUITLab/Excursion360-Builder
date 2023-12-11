@@ -14,6 +14,10 @@ namespace Packages.tour_creator.Editor.Protocol
         public string croppedImageUrl;
         public string type;
         public string backgroundAudioId;
+        /// <summary>
+        /// Если тур открывается по ссылке на эту локацию - повернуть камеру на указанный угол
+        /// </summary>
+        public float ifFirstStateRotationAngle;
         public Quaternion pictureRotation;
         public List<StateLink> links;
         public List<GroupStateLink> groupLinks;

@@ -27,9 +27,7 @@ class ContentItemEditor : EditorBase
         foreach (var item in state.GetComponents<ContentItem>())
         {
             var titleName = GetTitleStringOf(item.debugTitle);
-            Debug.Log("In editor!");
-            Debug.Log(titleName);
-            if (item.isOpened = EditorGUILayout.Foldout(item.isOpened, titleName, true))
+            if (item.isOpened = EditorGUILayout.Foldout(item.isOpened, $"[{titleName}]", true))
             {
                 Undo.RecordObject(item, "Edit state item name");
 
@@ -37,13 +35,12 @@ class ContentItemEditor : EditorBase
 
                 item.debugTitle = SpellCheckHintsContent.DrawTextField(
                     $"{item.GetInstanceID()}_{nameof(item.debugTitle)}",
-                    "Title",
+                    "Debug title",
                     item.debugTitle,
                     repaintAction,
                     n => { item.debugTitle = n; });
 
                 var value = StateItemPlaceEditor.EditableItem == (object)item;
-                Debug.Log("value is " + value);
                 if (GUILayout.Toggle(value, "edit", Styles.ToggleButtonStyleNormal))
                 {
                     StateItemPlaceEditor.EnableEditing(state, item, Color.green);

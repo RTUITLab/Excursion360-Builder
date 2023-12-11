@@ -2,7 +2,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Excursion360_Builder.Editor.States.Items;
-using Packages.Excursion360_Builder.Editor.Extensions;
 using Packages.Excursion360_Builder.Editor;
 using Packages.Excursion360_Builder.Editor.States.Items;
 using Packages.Excursion360_Builder.Editor.LivePreview;
@@ -23,10 +22,11 @@ public class StateEditorWindow : EditorWindow
 
     private Vector2 _itemsScroll = Vector2.zero;
 
-    private readonly GroupConnectionEditor groupConnectionEditor = new GroupConnectionEditor();
-    private readonly FieldItemEditor fieldItemEditor = new FieldItemEditor();
-    private readonly ContentItemEditor contentItemEditor = new ContentItemEditor();
-    private readonly ConnectionsToStateEditor connectionsToStateEditor = new ConnectionsToStateEditor();
+    private readonly GroupConnectionEditor groupConnectionEditor = new();
+    private readonly FieldItemEditor fieldItemEditor = new();
+    private readonly ContentItemEditor contentItemEditor = new();
+    private readonly ConnectionsToStateEditor connectionsToStateEditor = new();
+    private readonly IfShowFirstRotationEditor ifShowFirstRotationEditor = new();
 
     private bool connectionsFromOpened = true;
     private bool connectionsToOpened = true;
@@ -265,17 +265,10 @@ public class StateEditorWindow : EditorWindow
         {
             contentItemEditor.Draw(state, Repaint);
         }
-        EditorGUILayout.EndScrollView();
 
-        // TODO Content draw
-        //itemsOpened = EditorGUILayout.Foldout(itemsOpened, "Items: ", true);
-        //if (itemsOpened)
-        //{
-        //    connectionsOpened = false;
-        //    _connectionsEditMode = false;
-        //    TourEditor.StateGraphRenderer.targetState = null;
-        //    itemsEditor.Draw(state);
-        //}
+        ifShowFirstRotationEditor.Draw(state, Repaint);
+
+        EditorGUILayout.EndScrollView();
 
         EditorGUILayout.Space();
 

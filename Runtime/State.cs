@@ -25,6 +25,11 @@ public class State : MonoBehaviour
 
     private Renderer _renderer;
     private MaterialPropertyBlock _materialProperties;
+    /// <summary>
+    /// Если это состояние открывается первым, по ссылке - куда направлять камеру
+    /// </summary>
+    public float ifFirstStateRotationAngle;
+
 
     [SerializeField] private string id;
 

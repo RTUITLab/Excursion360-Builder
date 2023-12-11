@@ -352,7 +352,8 @@ internal class TourExporter
             groupLinks = GetGroupLinks(state),
             fieldItems = GetFieldItems(state, folderPath, resourceHandlePath),
             contentItems = GetContentItems(state, folderPath, resourceHandlePath),
-            backgroundAudioId = state.backgroundAudio?.Id
+            backgroundAudioId = state.backgroundAudio != null ? state.backgroundAudio.Id : null,
+            ifFirstStateRotationAngle = state.ifFirstStateRotationAngle,
         };
         return true;
     }
