@@ -31,6 +31,11 @@ public class StateGraphRenderer
     /// </summary>
     public bool showItems;
 
+    /// <summary>
+    /// Показывать ли имена для объектов без названия как их индексы к объекте
+    /// </summary>
+    public bool showIndexNamesForFieldItems;
+
     private GUIStyle _labelsStyle;
     private GUIStyle _labelsEditModeStyle;
     private GUIStyle _groupItemLabelStyle;
@@ -130,7 +135,6 @@ public class StateGraphRenderer
         var items = state.GetComponents<ContentItem>();
         foreach (var item in items)
         {
-            Debug.Log("Found item!");
             var itemPosition = item.transform.position + item.Orientation * Vector3.forward;
             Handles.color = Color.cyan;
             Handles.DotHandleCap(
@@ -207,7 +211,7 @@ public class StateGraphRenderer
     private void RenderFieldItems(State state)
     {
         var filedItems = state.GetComponents<FieldItem>();
-        foreach (var item in filedItems)
+        foreach (var (item, itemIndex) in filedItems.Select((f, i) => (f, i)))
         {
             if (item.hideInDebug)
             {
@@ -244,7 +248,12 @@ public class StateGraphRenderer
                 .Select(v => state.gameObject.transform.position + v.Orientation * Vector3.forward)
                 .Aggregate((prev, next) => prev + next);
             centralPosition /= item.vertices.Length;
-            Handles.Label(centralPosition, item.title, _groupItemLabelStyle);
+            var title = item.title ?? "";
+            if (showIndexNamesForFieldItems)
+            {
+                title = $"[#{itemIndex}] {title}";
+            }
+            Handles.Label(centralPosition, title, _groupItemLabelStyle);
         }
     }
 

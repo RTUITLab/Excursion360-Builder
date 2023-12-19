@@ -30,11 +30,15 @@ namespace Excursion360_Builder.Editor.States.Items
                     fieldItem.hideInDebug = targetState;
                 }
             }
+            if (GUILayout.Button("numerate fields without title"))
+            {
+                
+            }
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
 
-            foreach (var fieldItem in fieldItems)
+            foreach (var (fieldItem, i) in fieldItems.Select((f, i) => (f, i)))
             {
                 var title = fieldItem.title ?? "";
                 if (fieldItem.HasNoContent)
@@ -45,6 +49,10 @@ namespace Excursion360_Builder.Editor.States.Items
                 if (!string.IsNullOrEmpty(fieldItem.debugTitle))
                 {
                     fieldItemTitle = $"[{fieldItem.debugTitle}] {fieldItemTitle}";
+                }
+                if (TourEditor.StateGraphRenderer.showIndexNamesForFieldItems)
+                {
+                    fieldItemTitle = $"#{i} {fieldItemTitle}";
                 }
                 fieldItem.isOpened = EditorGUILayout.Foldout(fieldItem.isOpened, fieldItemTitle, true);
                 if (fieldItem.isOpened)
