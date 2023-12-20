@@ -1,8 +1,29 @@
 # Инстурмент для создания 360 экскурсий
 
+## Установка в Unity проект
+1. Добавить как [git submodule](https://www.git-scm.com/book/en/v2/Git-Tools-Submodules)
+    ```bash
+    git submodule add https://github.com/RTUITLab/Excursion360-Builder.git Packages/Excursion360-Builder
+    ```
+2. Добавить папку с ресурсами в .gitignore
+    ```gitignore
+    Assets/Tour creator/
+    ```
+3. Переключиться с конкретного коммита на `master` ветку для удобства
+    ```bash
+    cd Packages/Excursion360-Builder
+    git checkout master
+    ```
+
+Далее для обновления сборщика будет достаточно выполнить
+```bash
+cd Packages/Excursion360-Builder
+git pull
+```
+
 ## [Документация по использованию](Documentation/DOCUMENTATION.md)
 
-## АРрхитектура
+## Архитектура
 
 ![Architecture](Architecture.png)
 
@@ -10,6 +31,7 @@
 * `2023 12 20`
   * В меню редактора добавлен флаг для отображения порядковых номеров field item-ов в рамках сцены. Полезно для ориентирования при множестве объектов без названия.
   * Удалены ненужные using, которые приводили к невозможности использования редактора на некоторых проектах.
+  * Обновлена инструкция по добавлению проекта
 * `2023 12 12`
   * Для каждой локации можно указать направление, куда будет смотреть камера при открытии локации по ссылке
 * `2023 12 05`
