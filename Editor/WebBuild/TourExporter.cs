@@ -95,7 +95,8 @@ internal class TourExporter
             {
                 // Serialize and write
                 File.WriteAllText(excursionFolder + "/tour.json", JsonUtility.ToJson(tour, true));
-            } else
+            }
+            else
             {
                 EditorUtility.DisplayDialog("Error", $"No tour exported", "Ok");
             }
@@ -109,6 +110,8 @@ internal class TourExporter
         {
             EditorUtility.ClearProgressBar();
         }
+        ProjectEditorPrefs.BuildSuccess(exportOptions.ViewerPack.Version);
+
         // Finish
     }
 
@@ -451,7 +454,7 @@ internal class TourExporter
                 if (extension.ToUpperInvariant() == ".JPG")
                 {
                     using var image = Image.FromFile(path).FixOrientation();
-                    image.SaveCompressed(destinationFilePath, 30);
+                    image.SaveCompressed(destinationFilePath);
                 }
                 else
                 {

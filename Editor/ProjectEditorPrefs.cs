@@ -20,9 +20,24 @@ namespace Packages.Excursion360_Builder.Editor
             get => Tour.Instance.BuidNum;
             private set => Tour.Instance.BuidNum = value;
         }
+        public static DateTimeOffset BuildDate
+        {
+            get => Tour.Instance.BuildDate;
+            private set => Tour.Instance.BuildDate = value;
+        }
+        public static string BuildViewerVersion
+        {
+            get => Tour.Instance.BuildViewerVersion;
+            private set => Tour.Instance.BuildViewerVersion = value;
+        }
         public static int IncrementBuildNum()
         {
             return ++BuildNum;
+        }
+        public static void BuildSuccess(string viewerVersion)
+        {
+            BuildDate = DateTimeOffset.UtcNow;
+            BuildViewerVersion = viewerVersion;
         }
 
         public static string BuildLocation

@@ -54,6 +54,38 @@ public class Tour : MonoBehaviour
         }
     }
 
+    [SerializeField]
+    [HideInInspector]
+    private long _buildDateMilliseconds;
+    /// <summary>
+    /// Дата последней сборки проекта
+    /// </summary>
+    public DateTimeOffset BuildDate
+    {
+        get => DateTimeOffset.FromUnixTimeMilliseconds(_buildDateMilliseconds).ToLocalTime();
+        set
+        {
+            _buildDateMilliseconds = value.ToUnixTimeMilliseconds();
+        }
+    }
+
+    [SerializeField]
+    [HideInInspector]
+    private string _buildViewerVersion;
+
+    /// <summary>
+    /// Название последней версии сборщика, которым был собран проект
+    /// </summary>
+    public string BuildViewerVersion
+    {
+        get => _buildViewerVersion ?? "";
+        set
+        {
+            Debug.Log("seter " + value);
+            _buildViewerVersion = value ?? "";
+        }
+    }
+
     public string title = ">>place tour name here<<";
 
     public State firstState;

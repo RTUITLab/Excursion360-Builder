@@ -54,8 +54,10 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
             if (showAdditional)
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.LabelField("Project id", ProjectEditorPrefs.ProjectId);
+                EditorGUILayout.LabelField("Build date", ProjectEditorPrefs.BuildDate.ToString("yyyy-MM-dd HH:mm:ss zz"));
+                EditorGUILayout.LabelField("Build viewer", ProjectEditorPrefs.BuildViewerVersion);
                 EditorGUILayout.LabelField("Build num", ProjectEditorPrefs.BuildNum.ToString());
+                EditorGUILayout.LabelField("Project id", ProjectEditorPrefs.ProjectId);
                 EditorGUI.indentLevel--;
             }
 

@@ -30,10 +30,6 @@ namespace Excursion360_Builder.Editor.States.Items
                     fieldItem.hideInDebug = targetState;
                 }
             }
-            if (GUILayout.Button("numerate fields without title"))
-            {
-                
-            }
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
