@@ -89,6 +89,7 @@ internal class TourExporter
 
             ProjectEditorPrefs.IncrementBuildNum();
             CreateConfigFile(excursionFolder, logoFileName, exportOptions.ResourceHandlePath);
+            CreateEmptyPreloadApi(excursionFolder);
 
             var tour = GenerateTour(excursionFolder, exportOptions);
             if (tour != null)
@@ -115,6 +116,13 @@ internal class TourExporter
         // Finish
     }
 
+    private static void CreateEmptyPreloadApi(string excursionFolder)
+    {
+        var eapiFolder = Path.Combine(excursionFolder, "eapi");
+        Directory.CreateDirectory(eapiFolder);
+        var preloadJson = Path.Combine(eapiFolder, "preload.json");
+        File.WriteAllText(preloadJson, "{\"images\":[]}");
+    }
 
     public static Exported.Tour GenerateTour(string folderPath, GenerateTourOptions generateTourOptions)
     {
