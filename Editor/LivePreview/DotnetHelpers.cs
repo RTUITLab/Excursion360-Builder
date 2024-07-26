@@ -52,15 +52,15 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             try
             {
                 var systemRuntime = GetSystemRuntime();
-                var arguments = $"publish {projectFolder} " +
+                var arguments = $"publish {projectFolder}/Web/Web.csproj " +
                                 $"-r {systemRuntime} " +
                                 $"-o {outputFolder} " +
                                 $"-c Release " +
                                 $"--self-contained true " +
                                 $"-p:PublishSingleFile=true " +
-                                $"-p:PublishTrimmed=true " +
                                 $"-p:DebugType=None " +
-                                $"-p:DebugSymbols=False";
+                                $"-p:DebugSymbols=False" +
+                                $"";
                 var proc = Process.Start(new ProcessStartInfo
                 {
                     FileName = "dotnet",

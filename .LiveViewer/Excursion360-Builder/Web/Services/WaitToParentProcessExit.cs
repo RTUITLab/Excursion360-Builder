@@ -2,53 +2,50 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Web.Models.Options;
 
-namespace Web.Services
-{
-    public class WaitToParentProcessExit : BackgroundService
-    {
-        private readonly IOptions<StartupOptions> options;
-        private readonly IHostApplicationLifetime lifetime;
-        private readonly ILogger<WaitToParentProcessExit> logger;
+namespace Web.Services;
 
-        public WaitToParentProcessExit(
-            IOptions<StartupOptions> options,
-            IHostApplicationLifetime lifetime,
-            ILogger<WaitToParentProcessExit> logger)
+public class WaitToParentProcessExit : BackgroundService
+{
+    private readonly IOptions<StartupOptions> options;
+    private readonly IHostApplicationLifetime lifetime;
+    private readonly ILogger<WaitToParentProcessExit> logger;
+
+    public WaitToParentProcessExit(
+        IOptions<StartupOptions> options,
+        IHostApplicationLifetime lifetime,
+        ILogger<WaitToParentProcessExit> logger)
+    {
+        this.options = options;
+        this.lifetime = lifetime;
+        this.logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        Process targetProcess;
+        try
         {
-            this.options = options;
-            this.lifetime = lifetime;
-            this.logger = logger;
+            targetProcess = Process.GetProcessById(options.Value.ParentProcessId);
+        }
+        catch
+        {
+            logger.LogError($"not found process for id {options.Value.ParentProcessId}");
+            return;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        while (!stoppingToken.IsCancellationRequested && !targetProcess.HasExited)
         {
-            Process targetProcess;
-            try
-            {
-                targetProcess = Process.GetProcessById(options.Value.ParentProcessId);
-            }
-            catch
-            {
-                logger.LogError($"not found process for id {options.Value.ParentProcessId}");
-                return;
-            }
-
-            while (!stoppingToken.IsCancellationRequested && !targetProcess.HasExited)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
-            }
-            if (!stoppingToken.IsCancellationRequested)
-            {
-                logger.LogInformation("parent process exited, closing app");
-                lifetime.StopApplication();
-            }
+            await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
+        }
+        if (!stoppingToken.IsCancellationRequested)
+        {
+            logger.LogInformation("parent process exited, closing app");
+            lifetime.StopApplication();
         }
     }
 }

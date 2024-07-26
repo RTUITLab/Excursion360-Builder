@@ -67,7 +67,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         private static bool FindExistingProcess(string executablePath, out Process process)
         {
             var targetProcess = Process.GetProcesses()
-                .Where(p => p.ProcessName.Contains("Web"))
+                .Where(ProcessNameContainsWeb)
                 .Select(p =>
                 {
                     try { return new { process = p, module = p.MainModule }; } catch { return null; }
@@ -82,6 +82,18 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             else
             {
                 process = null;
+                return false;
+            }
+        }
+
+        private static bool ProcessNameContainsWeb(Process process)
+        {
+            try
+            {
+                return process.ProcessName.Contains("Web");
+            }
+            catch
+            {
                 return false;
             }
         }

@@ -91,6 +91,11 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         {
             if (previewBackendProcess != null)
             {
+                GUILayout.Label(previewBackendProcess.HasExited ? $"exited {previewBackendProcess.ExitCode}" : $"running {(DateTime.Now - previewBackendProcess.StartTime):hh\\:mm\\:ss}");
+            }
+
+            if (previewBackendProcess != null && !previewBackendProcess.HasExited)
+            {
                 DrawRunnedProcess();
                 return;
             }
@@ -115,6 +120,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         private void DrawReadyToStart()
         {
             GUILayout.Label("You can start live preview backend");
+
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Start live preview backend"))
             {
@@ -131,26 +137,16 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
 
         private void DrawRunnedProcess()
         {
-            GUILayout.Label(previewBackendProcess.HasExited ? $"exited {previewBackendProcess.ExitCode}" : $"running {(DateTime.Now - previewBackendProcess.StartTime):hh\\:mm\\:ss}");
-
-            if (!previewBackendProcess.HasExited)
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Stop"))
             {
-                EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("Stop"))
-                {
-                    previewBackendProcess.Kill();
-                    previewBackendProcess = null;
-                }
-                if (GUILayout.Button("Open Preview page"))
-                {
-                    Application.OpenURL($"http://localhost:5000/index.html");
-                }
-                EditorGUILayout.EndHorizontal();
+                previewBackendProcess.Kill();
             }
-            else
+            if (GUILayout.Button("Open Preview page"))
             {
-                previewBackendProcess = null;
+                Application.OpenURL($"http://localhost:5000/index.html");
             }
+            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawBuildPreviewBackend()
