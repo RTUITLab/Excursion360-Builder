@@ -248,7 +248,11 @@ public class StateGraphRenderer
                 .Select(v => state.gameObject.transform.position + v.Orientation * Vector3.forward)
                 .Aggregate((prev, next) => prev + next);
             centralPosition /= item.vertices.Length;
-            var title = item.title ?? "";
+            var title = (item.debugTitle ?? "") + " " + (item.title ?? "")[..Math.Min((item.title ?? "").Length, 5)];
+            if (item.title?.Length > 5)
+            {
+                title += "...";
+            }
             if (showIndexNamesForFieldItems)
             {
                 title = $"[#{itemIndex}] {title}";
