@@ -36,7 +36,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                         Patch = m.Groups["patch"].Value
                     })
                     .ToList();
-                return versions.Any(v => v.Major == "5");
+                return versions.Any(v => v.Major == "9");
             }
             catch (Exception ex) when (ex is Win32Exception || ex is FileNotFoundException)
             {

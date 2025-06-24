@@ -2,27 +2,18 @@
 
 var connection = new signalR.HubConnectionBuilder().withUrl("/interophub").build();
 
-
-connection.on("RotateCamera", function (rotationJson) {
-    if (typeof (rotationJson) === "string") {
-        const rotation = JSON.parse(rotationJson);
-        document.viewer.rotateCameraToQuaternion(rotation);
-    } else {
-        console.error("incorrect argument");
-    }
-});
-
 connection.on("OpenTour", function (tourJson) {
-    if (typeof (tourJson) === "string") {
-        const tour = JSON.parse(tourJson);
-        location.hash = "";
-        document.viewer.show(tour);
-        console.log(tour);
-    } else {
+    if (typeof (tourJson) !== "string") {
         console.error("incorrect argument");
+        return;
     }
+    const tourData = JSON.parse(tourJson);
+    const { tour, rotation } = tourData;
+    location.hash = "";
+    document.viewer.show(tour, true);
+    console.log(tour);
+    document.viewer.rotateCameraToQuaternion(rotation);
 });
-
 
 connection.start().then(function () {
     console.log("connection established");

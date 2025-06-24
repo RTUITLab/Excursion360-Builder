@@ -2,16 +2,10 @@
 using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using Packages.tour_creator.Editor.WebBuild;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Packages.Excursion360_Builder.Editor.LivePreview
 {
@@ -21,7 +15,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         private Process previewBackendProcess;
         private WebViewerBuildPack selectedBuildPack;
 
-        private ViewerBuildsGUI viewerBuildsGUI = new ViewerBuildsGUI();
+        private readonly ViewerBuildsGUI viewerBuildsGUI = new ViewerBuildsGUI();
 
 
         private string ProjectFolder =>
@@ -39,7 +33,6 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
         {
             try
             {
-
                 if (previewBackendProcess == null || previewBackendProcess.HasExited)
                 {
                     EditorUtility.DisplayDialog("Info", "Please, start preview viewer", "Ok");
@@ -56,8 +49,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 }
                 tour.firstStateId = state.GetExportedId();
                 tour.fastReturnToFirstStateEnabled = false; // Нет необходимости в возврате на время тестирования
-                BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.SendCameraRotation(SceneView.lastActiveSceneView.rotation));
-                BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.OpenTour(tour));
+                BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.OpenTour(tour, SceneView.lastActiveSceneView.rotation));
             }
             finally
             {
@@ -160,7 +152,7 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
 
         private void DrawInstallDotNetMessage()
         {
-            GUILayout.Label("Please, install .NET 5 SDK and restart Unity");
+            GUILayout.Label("Please, install .NET 9 SDK and restart Unity");
             if (GUILayout.Button("Download page"))
             {
                 Application.OpenURL("https://dotnet.microsoft.com/download/dotnet/5.0");

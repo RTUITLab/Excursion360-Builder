@@ -33,29 +33,23 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
             process.Start();
             return process;
         }
-
-        public static IEnumerator SendCameraRotation(Quaternion rotation)
+        [Serializable]
+        private class TourWithCameraRotationForOpeningInLivePreview
         {
-            using (UnityWebRequest request = new UnityWebRequest(
-                "http://localhost:5000/api/interop/rotateCamera", "POST"
-                ))
-            {
-                byte[] bodyRaw = Encoding.UTF8.GetBytes(JsonUtility.ToJson(rotation));
-                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-                request.downloadHandler = new DownloadHandlerBuffer();
-                request.SetRequestHeader("Content-Type", "application/json");
-                yield return request.SendWebRequest();
-                var row = request.downloadHandler.text;
-            }
+            public Exported.Tour tour;
+            public Quaternion rotation;
         }
-
-        public static IEnumerator OpenTour(Exported.Tour tour)
+        public static IEnumerator OpenTour(Exported.Tour tour, Quaternion rotation)
         {
             using (UnityWebRequest request = new UnityWebRequest(
                 "http://localhost:5000/api/interop/openTour", "POST"
                 ))
             {
-                byte[] bodyRaw = Encoding.UTF8.GetBytes(JsonUtility.ToJson(tour));
+                byte[] bodyRaw = Encoding.UTF8.GetBytes(JsonUtility.ToJson(new TourWithCameraRotationForOpeningInLivePreview
+                {
+                    tour = tour,
+                    rotation = rotation,
+                }));
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);
                 request.downloadHandler = new DownloadHandlerBuffer();
                 request.SetRequestHeader("Content-Type", "application/json");

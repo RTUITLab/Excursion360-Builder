@@ -1,13 +1,8 @@
 ﻿using Packages.Excursion360_Builder.Editor.SpellCheck;
 using Packages.Excursion360_Builder.Editor;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 #if UNITY_EDITOR
 
 class ContentItemEditor : EditorBase

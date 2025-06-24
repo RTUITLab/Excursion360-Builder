@@ -28,7 +28,7 @@ public class SceneController : ControllerBase
     [Route("config.json")]
     public ActionResult ConfigJSON()
     {
-        return Ok(new { sceneUrl = "" });
+        return Ok(new { sceneUrl = "", minFOV = 0.1, maxFOV = 3 });
     }
 
     [Route("Assets/{*asset}")]
@@ -59,24 +59,11 @@ public class SceneController : ControllerBase
             return NotFound("not found index.html");
         }
         var indexContent = System.IO.File.ReadAllText(indexFile);
-        indexContent = indexContent.Replace("</head>", 
+        indexContent = indexContent.Replace("</head>",
             "\n<script src=\"js/signalr/dist/browser/signalr.js\"></script>" +
             "\n<script src=\"js/interop.js\"></script>" +
             "\n</head>");
         return File(Encoding.UTF8.GetBytes(indexContent), "text/html");
-    }
-
-    /// <summary>
-    /// Rotate camera on viewer
-    /// </summary>
-    /// <returns></returns>
-    [HttpPost("api/interop/rotateCamera")]
-    public async Task<ActionResult> RotateCameraAction(
-        [FromServices] IHubContext<InteropHub> interopHub,
-        [FromBody] JsonElement rotation)
-    {
-        await interopHub.Clients.All.SendAsync("RotateCamera", JsonSerializer.Serialize(rotation));
-        return Ok();
     }
 
     /// <summary>
@@ -86,9 +73,9 @@ public class SceneController : ControllerBase
     [HttpPost("api/interop/openTour")]
     public async Task<ActionResult> OpenTourAction(
         [FromServices] IHubContext<InteropHub> interopHub,
-        [FromBody] JsonElement tour)
+        [FromBody] JsonElement openTourData)
     {
-        var tourJson = JsonSerializer.Serialize(tour);
+        var tourJson = JsonSerializer.Serialize(openTourData);
         await interopHub.Clients.All.SendAsync("OpenTour", tourJson);
         return Ok(tourJson);
     }
