@@ -20,28 +20,30 @@ namespace Packages.Excursion360_Builder.Editor.EditorWrappers
                 }
                 EditorGUILayout.EndHorizontal();
             }
-            for (int i = 0; i < source.Count; i++)
+            for (int iSrc = 0, iUpd = 0; iSrc < source.Count; iSrc++, iUpd++)
             {
                 EditorGUILayout.BeginHorizontal();
-                updated[i] = itemEditor(source[i], i);
+                updated[iUpd] = itemEditor(source[iSrc], iSrc);
 
                 EditorGUILayout.BeginVertical(Buttons.LittleButtonWidth);
-                if (i == 0)
+                if (iSrc == 0)
                 {
                     if (Buttons.Plus())
                     {
-                        updated = new List<T>(source);
                         updated.Insert(0, default);
+                        iUpd++; // На этой итерации обновленный список "отстает" по индексам
                     }
                 }
                 if (Buttons.Delete())
                 {
-                    updated = new List<T>(source.Where((_, index) => index != i));
+                    updated = new List<T>(source.Where((_, index) => index != iSrc));
+                    iUpd--; // На этой итерации элементы обновленного списка теперь смещены на 1 назад
                 }
                 if (Buttons.Plus())
                 {
                     updated = new List<T>(source);
-                    updated.Insert(i + 1, default);
+                    updated.Insert(iSrc + 1, default);
+                    iUpd++; // Парные элементы теперь находятся впереди
                 }
                 EditorGUILayout.EndVertical();
 
