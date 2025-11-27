@@ -26,8 +26,33 @@ namespace Excursion360_Builder.Shared.States.Items.Field
         public bool hideInDebug;
 
         public Texture texture;
+        /// <summary>
+        /// Изображения, которые прикреплены к элементу
+        /// </summary>
         public List<Texture> images = new List<Texture>();
+        /// <summary>
+        /// Аудио сопровождение для изображений, по соответствию индексов
+        /// </summary>
+        /// <remarks>
+        /// Да, в идеале сделать бы некую структуру, определяющую как изображение так и аудио, но для упрощения миграции хранится в разных списках
+        /// </remarks>
+        public List<AudioClip> imageAudios = new List<AudioClip>();
+        /// <summary>
+        /// Текстовые сопровождения для изображений, по соответствию индексов
+        /// </summary>
+        /// <remarks>
+        /// Да, в идеале сделать бы некую структуру, определяющую всё связанное с изображением, но для упрощения миграции хранится в разных списках
+        /// </remarks>
+        public List<string> imageTexts = new List<string>();
+
+
+        /// <summary>
+        /// Видео ролики, приложенные к элементу
+        /// </summary>
         public List<VideoClip> videos = new List<VideoClip>();
+        /// <summary>
+        /// Общие аудио ролики, приложенные к элементу
+        /// </summary>
         public List<AudioClip> audios = new List<AudioClip>();
         [TextArea(10, 120)]
         public string text;

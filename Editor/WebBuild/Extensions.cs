@@ -122,5 +122,24 @@ namespace Packages.tour_creator.Editor.WebBuild
                 (int)Math.Ceiling(size.Width * multipler),
                 (int)Math.Ceiling(size.Height * multipler));
         }
+
+        public static T GetByIndexOrDefault<T>(this List<T> list, int index)
+        {
+            if (index < list.Count)
+            {
+                return list[index];
+            }
+            return default;
+        }
+        public static void SetByIndexWithChangeLengthToRequired<T>(this List<T> list, int index, T value)
+        {
+            var targetLength = index + 1;
+            var needToAddElements = targetLength - list.Count;
+            for (int i = 0; i < needToAddElements; i++)
+            {
+                list.Add(default);
+            }
+            list[index] = value;
+        }
     }
 }

@@ -16,15 +16,17 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
             string currentContent,
             Action rerenderCallback,
             Action<string> updateTextCallback,
-            bool multiline = false)
-            => DrawTextField(uniqueFieldKey, default, currentContent, rerenderCallback, updateTextCallback, multiline);
+            bool multiline = false,
+            string placeholder = null)
+            => DrawTextField(uniqueFieldKey, default, currentContent, rerenderCallback, updateTextCallback, multiline, placeholder);
         public static string DrawTextField(
             string uniqueFieldKey,
             string label,
             string currentContent,
             Action repaintCallback,
             Action<string> updateTextCallback,
-            bool multiline = false)
+            bool multiline = false,
+            string placeholder = null)
         {
             var currentRect = EditorGUILayout.BeginHorizontal();
             GUILayout.Space(EditorGUI.indentLevel * 20);
@@ -59,6 +61,17 @@ namespace Packages.Excursion360_Builder.Editor.SpellCheck
                 string.IsNullOrEmpty(label)
                 ? EditorGUILayout.TextField(currentContent) :
                   EditorGUILayout.TextField(label, currentContent);
+            // TODO: Не работает для полей с label
+            if (!string.IsNullOrEmpty(placeholder) && string.IsNullOrEmpty(currentContent?.Trim()))
+            {
+                const int textMargin = 2;
+                var guiColor = GUI.color;
+                GUI.color = Color.grey;
+                var textRect = GUILayoutUtility.GetLastRect();
+                var position = new Rect(textRect.x + textMargin, textRect.y, textRect.width, textRect.height);
+                EditorGUI.LabelField(position, placeholder);
+                GUI.color = guiColor;
+            }
             EditorGUILayout.EndHorizontal();
             return currentContent;
         }

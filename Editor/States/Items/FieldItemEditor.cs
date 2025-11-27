@@ -2,11 +2,9 @@
 using Packages.Excursion360_Builder.Editor;
 using Packages.Excursion360_Builder.Editor.EditorWrappers;
 using Packages.Excursion360_Builder.Editor.SpellCheck;
+using Packages.tour_creator.Editor.WebBuild;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,7 +17,7 @@ namespace Excursion360_Builder.Editor.States.Items
             EditorGUI.indentLevel++;
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(EditorGUI.indentLevel * 15);
-            
+
             var fieldItems = state.GetComponents<FieldItem>();
 
             if (GUILayout.Button("Show/hide all"))
@@ -99,17 +97,23 @@ namespace Excursion360_Builder.Editor.States.Items
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(EditorGUI.indentLevel * 15);
             fieldItem.attachmentsTabIndex = GUILayout.Toolbar(fieldItem.attachmentsTabIndex, new string[] {
-                "Images",
-                "Video",
-                "Text",
-                "Audio"
+                "Изображения",
+                "Видео",
+                "Текст",
+                "Аудио"
             });
             EditorGUILayout.EndHorizontal();
 
             if (fieldItem.attachmentsTabIndex == 0)
             {
-                fieldItem.images = ArrayEditor.EditList(fieldItem.images,
-                    (t, i) => (Texture)EditorGUILayout.ObjectField($"Image {i + 1}", t, typeof(Texture), true));
+                var result = ArrayEditor.EditList(
+                    source: 
+                        fieldItem.images.Select((image, i) => (image, audio: fieldItem.imageAudios.GetByIndexOrDefault(i), text: fieldItem.imageTexts.GetByIndexOrDefault(i))).ToList(),
+                    itemEditor:
+                        (t, i) => RenderImageWithAudioAndText(fieldItem, t, i, repaintAction));
+                fieldItem.images = result.Select(r => r.image).ToList();
+                fieldItem.imageAudios = result.Select(r => r.audio).ToList();
+                fieldItem.imageTexts = result.Select(r => r.text).ToList();
             }
             else
             {
@@ -118,7 +122,7 @@ namespace Excursion360_Builder.Editor.States.Items
                 {
                     case 1:
                         var videosProperty = serializedObject.FindProperty(nameof(fieldItem.videos));
-                        EditorGUILayout.PropertyField(videosProperty, new GUIContent("ONLY FIRST VIDEO WILL BE USED! (now)"));
+                        EditorGUILayout.PropertyField(videosProperty, new GUIContent("ТОЛЬКО ПЕРВОЕ ВИДЕО БУДЕТ ИСПОЛЬЗОВАНО (пока)"));
                         break;
                     case 2:
                         var textProperty = serializedObject.FindProperty(nameof(fieldItem.text));
@@ -126,16 +130,41 @@ namespace Excursion360_Builder.Editor.States.Items
                         break;
                     case 3:
                         var audiosProperty = serializedObject.FindProperty(nameof(fieldItem.audios));
-                        EditorGUILayout.PropertyField(audiosProperty, new GUIContent("ONLY FIRST AUDIO WILL BE USED! (now)"));
+                        EditorGUILayout.PropertyField(audiosProperty, new GUIContent("ТОЛЬКО ПЕРВОЕ АУДИО БУДЕТ ИСПОЛЬЗОВАНО! (now)"));
                         break;
                     default:
                         break;
                 }
                 serializedObject.ApplyModifiedProperties();
             }
-            
             EditorGUI.indentLevel--;
 
+        }
+
+        private (Texture texture, AudioClip audio, string text) RenderImageWithAudioAndText(
+            FieldItem fieldItem, 
+            (Texture texture, AudioClip audio, string text) elements, 
+            int index, 
+            Action repaintAction)
+        {
+            EditorGUILayout.BeginHorizontal();
+
+            EditorGUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+            var text = SpellCheckHintsContent.DrawTextField(
+                $"{fieldItem.GetInstanceID()}_{nameof(fieldItem.title)}_{index}_{elements.text}",
+                null,
+                elements.text,
+                repaintAction,
+                n => { fieldItem.imageTexts.SetByIndexWithChangeLengthToRequired(index, n); },
+                placeholder: "Подпись к изображению");
+            var selectedAudio = (AudioClip)EditorGUILayout.ObjectField("", elements.audio, typeof(AudioClip), true);
+            EditorGUILayout.EndVertical();
+            
+            var selectedTexture = (Texture)EditorGUILayout.ObjectField("", elements.texture, typeof(Texture), true, GUILayout.Width(95));
+
+            EditorGUILayout.EndHorizontal();
+
+            return (selectedTexture, selectedAudio, text);
         }
 
         private static void RenderPositionVertexes(State state, FieldItem fieldItem)

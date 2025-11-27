@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,7 +10,7 @@ namespace Packages.Excursion360_Builder.Editor.EditorWrappers
     {
         public static List<T> EditList<T>(List<T> source, Func<T, int, T> itemEditor)
         {
-            var updated = source;
+            var updated = new List<T>(source);
             if (source.Count == 0)
             {
                 EditorGUILayout.BeginHorizontal();
@@ -25,7 +23,7 @@ namespace Packages.Excursion360_Builder.Editor.EditorWrappers
             for (int i = 0; i < source.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                source[i] = itemEditor(source[i], i);
+                updated[i] = itemEditor(source[i], i);
 
                 EditorGUILayout.BeginVertical(Buttons.LittleButtonWidth);
                 if (i == 0)
