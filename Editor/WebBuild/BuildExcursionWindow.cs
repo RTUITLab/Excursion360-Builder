@@ -1,21 +1,8 @@
-﻿using ICSharpCode.SharpZipLib.Core;
-using ICSharpCode.SharpZipLib.Zip;
 using Packages.Excursion360_Builder.Editor.RemoteItemsControllers;
 using Packages.Excursion360_Builder.Editor.Viewer;
 using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
-using Packages.tour_creator.Editor.WebBuild;
-using Packages.tour_creator.Editor.WebBuild.GitHubAPI;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace Packages.Excursion360_Builder.Editor.WebBuild
 {
@@ -113,6 +100,7 @@ namespace Packages.Excursion360_Builder.Editor.WebBuild
             }
             EditorGUILayout.EndHorizontal();
             var newImageCroppingLevel = EditorGUILayout.IntSlider("Image cropping level", imageCroppingLevel, ImageCropper.MIN_PARTS_COUNT, ImageCropper.MAX_PARTS_COUNT);
+
             if (newImageCroppingLevel != imageCroppingLevel)
             {
                 imageCroppingLevel = newImageCroppingLevel;

@@ -81,7 +81,6 @@ public class Tour : MonoBehaviour
         get => _buildViewerVersion ?? "";
         set
         {
-            Debug.Log("seter " + value);
             _buildViewerVersion = value ?? "";
         }
     }

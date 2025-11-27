@@ -1,4 +1,4 @@
-﻿using Excursion360_Builder.Shared.States.Items.Field;
+using Excursion360_Builder.Shared.States.Items.Field;
 using Packages.Excursion360_Builder.Editor;
 using Packages.Excursion360_Builder.Editor.EditorWrappers;
 using Packages.Excursion360_Builder.Editor.SpellCheck;
@@ -20,14 +20,7 @@ namespace Excursion360_Builder.Editor.States.Items
 
             var fieldItems = state.GetComponents<FieldItem>();
 
-            if (GUILayout.Button("Show/hide all"))
-            {
-                var targetState = !fieldItems.FirstOrDefault().hideInDebug;
-                foreach (var fieldItem in fieldItems)
-                {
-                    fieldItem.hideInDebug = targetState;
-                }
-            }
+            RenderShowHideAllButton(fieldItems);
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
@@ -54,7 +47,7 @@ namespace Excursion360_Builder.Editor.States.Items
                     DrawFieldItem(state, fieldItem, repaintAction);
                 }
             }
-            if (GUILayout.Button("Add"))
+            if (GUILayout.Button("Добавить интерактивный элемент"))
             {
                 var created = Undo.AddComponent<FieldItem>(state.gameObject);
                 created.isOpened = true;
@@ -62,16 +55,29 @@ namespace Excursion360_Builder.Editor.States.Items
             EditorGUI.indentLevel--;
         }
 
+        private static void RenderShowHideAllButton(FieldItem[] fieldItems)
+        {
+            var targetState = !fieldItems.FirstOrDefault().hideInDebug;
+            if (GUILayout.Button(targetState ? "Скрыть всё" : "Показать всё"))
+            {
+                foreach (var fieldItem in fieldItems)
+                {
+                    fieldItem.hideInDebug = targetState;
+                }
+            }
+        }
+
         private void DrawFieldItem(State state, FieldItem fieldItem, Action repaintAction)
         {
             EditorGUI.indentLevel++;
 
-            Undo.RecordObject(fieldItem, "Edit field item");
+            Undo.RecordObject(fieldItem, "Редактирование интерактивного элемента");
             EditorGUILayout.BeginHorizontal();
+
 
             fieldItem.title = SpellCheckHintsContent.DrawTextField(
                 $"{fieldItem.GetInstanceID()}_{nameof(fieldItem.title)}",
-                "Title",
+                "Название",
                 fieldItem.title,
                 repaintAction,
                 n => { fieldItem.title = n; });
@@ -82,12 +88,12 @@ namespace Excursion360_Builder.Editor.States.Items
             EditorGUILayout.EndHorizontal();
             fieldItem.debugTitle = SpellCheckHintsContent.DrawTextField(
                 $"{fieldItem.GetInstanceID()}_{nameof(fieldItem.debugTitle)}",
-                "Debug title",
+                "Для редактора",
                 fieldItem.debugTitle,
                 repaintAction,
                 n => { fieldItem.debugTitle = n; });
 
-            fieldItem.hideInDebug = !EditorGUILayout.Toggle("Draw borders", !fieldItem.hideInDebug);
+            fieldItem.hideInDebug = !EditorGUILayout.Toggle("Отображать контур", !fieldItem.hideInDebug);
 
             if (!fieldItem.hideInDebug)
             {
@@ -97,10 +103,10 @@ namespace Excursion360_Builder.Editor.States.Items
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(EditorGUI.indentLevel * 15);
             fieldItem.attachmentsTabIndex = GUILayout.Toolbar(fieldItem.attachmentsTabIndex, new string[] {
-                "Изображения",
+                $"Изображения {fieldItem.images.Count}",
                 "Видео",
                 "Текст",
-                "Аудио"
+                $"Аудио {fieldItem.audios.Count}"
             });
             EditorGUILayout.EndHorizontal();
 
@@ -126,7 +132,7 @@ namespace Excursion360_Builder.Editor.States.Items
                         break;
                     case 2:
                         var textProperty = serializedObject.FindProperty(nameof(fieldItem.text));
-                        EditorGUILayout.PropertyField(textProperty);
+                        EditorGUILayout.PropertyField(textProperty, new GUIContent("Текст-описание всего интерактивного элемента"));
                         break;
                     case 3:
                         var audiosProperty = serializedObject.FindProperty(nameof(fieldItem.audios));

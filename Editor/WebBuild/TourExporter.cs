@@ -1,21 +1,22 @@
-﻿using System;
+using System;
 using System.IO;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.Core;
 using Packages.tour_creator.Editor.WebBuild;
-using Excursion360_Builder.Shared.States.Items.Field;
 using Packages.Excursion360_Builder.Editor.WebBuild;
 using System.Text.RegularExpressions;
 using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using Packages.Excursion360_Builder.Editor;
 using System.Drawing;
-using static UnityEditor.VersionControl.Asset;
 using Packages.Excursion360_Builder.Editor.Protocol;
 using Packages.tour_creator.Editor.Protocol;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
+
 
 
 #if UNITY_EDITOR
@@ -95,7 +96,15 @@ internal class TourExporter
             if (tour != null)
             {
                 // Serialize and write
-                File.WriteAllText(excursionFolder + "/tour.json", JsonUtility.ToJson(tour, true));
+                File.WriteAllText(excursionFolder + "/tour.json", JsonConvert.SerializeObject(
+                    tour,
+                    settings: new JsonSerializerSettings
+                    {
+                        Formatting = Formatting.Indented,
+                        ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                        Converters = new List<JsonConverter> { QuaternionJsonConverter.Instance, ColorJsonConverter.Instance }
+                    }
+                    ));
             }
             else
             {
@@ -142,7 +151,7 @@ internal class TourExporter
 
         var tour = PrepateTour(Tour.Instance);
 
-        tour.backgroundAudios = ExportAudios(folderPath, tour, generateTourOptions.ResourceHandlePath);
+        tour.BackgroundAudios = ExportAudios(folderPath, tour, generateTourOptions.ResourceHandlePath);
 
 
         // Pre process states
@@ -165,7 +174,7 @@ internal class TourExporter
                     return null;
                 }
 
-                tour.states.Add(exportedState);
+                tour.States.Add(exportedState);
             }
             catch (Exception ex)
             {
@@ -264,13 +273,13 @@ internal class TourExporter
         var indexFileContent = File.ReadAllText(indexFile);
         if (indexFileContent.Contains(titleTemplate))
         {
-            indexFileContent = indexFileContent.Replace(titleTemplate, tour.title);
+            indexFileContent = indexFileContent.Replace(titleTemplate, tour.Title);
         }
         else
         {
             Debug.LogWarning($"Can't find title template {titleTemplate} in index file. Please, use latest viewer.");
         }
-        PatchJsFile(folderPath, $"{tour.id}-{tour.versionNum}", ref indexFileContent);
+        PatchJsFile(folderPath, $"{tour.Id}-{tour.VersionNum}", ref indexFileContent);
         File.WriteAllText(indexFile, indexFileContent);
     }
 
@@ -297,15 +306,15 @@ internal class TourExporter
         EditorUtility.SetDirty(tour);
         return new Exported.Tour
         {
-            id = ProjectEditorPrefs.ProjectId,
-            title = tour.title,
+            Id = ProjectEditorPrefs.ProjectId,
+            Title = tour.title,
             BuildTime = DateTimeOffset.Now,
-            versionNum = ProjectEditorPrefs.BuildNum,
-            tourProtocolVersion = "v0.9",
-            firstStateId = tour.firstState.GetExportedId(),
-            fastReturnToFirstStateEnabled = tour.fastReturnToFirstStateEnabled,
-            colorSchemes = tour.colorSchemes.Select(cs => cs.color).ToArray(),
-            states = new List<Exported.State>(),
+            VersionNum = ProjectEditorPrefs.BuildNum,
+            TourProtocolVersion = "v0.10",
+            FirstStateId = tour.firstState.GetExportedId(),
+            FastReturnToFirstStateEnabled = tour.fastReturnToFirstStateEnabled,
+            ColorSchemes = tour.colorSchemes.Select(cs => cs.color).ToArray(),
+            States = new List<Exported.State>(),
         };
     }
 
@@ -386,16 +395,39 @@ internal class TourExporter
 
         foreach (var fieldItem in unityFieldConnections)
         {
-            fieldItems.Add(new Exported.FieldItem
-            {
-                title = fieldItem.title,
-                vertices = fieldItem.vertices.Select(v => v.Orientation).ToArray(),
-                images = fieldItem.images.Select((texture, i) => ExportResource(
+            var images = fieldItem.images.Select((texture, i) => ExportResource(
                         texture,
                         folderPath,
                         $"{fieldItem.GetExportedId()}_{i}",
                         resourceHandlePath))
-                    .ToArray(),
+                        .ToArray();
+            fieldItems.Add(new Exported.FieldItem
+            {
+                title = fieldItem.title,
+                vertices = fieldItem.vertices.Select(v => v.Orientation).ToArray(),
+                imageContent = images.Select((imageSrc, i) =>
+                {
+                    var audio = fieldItem.imageAudios.GetByIndexOrDefault(i);
+                    FieldItemAudioContent itemAudioContent = null;
+                    if (audio)
+                    {
+                        itemAudioContent = new FieldItemAudioContent
+                        {
+                            src = ExportResource(
+                                audio,
+                                folderPath,
+                                $"{fieldItem.GetExportedId()}_{i}",
+                                resourceHandlePath),
+                            duration = audio.length,
+                        };
+                    }
+                    return new FieldItemImageContent
+                    {
+                        imageSrc = imageSrc,
+                        description = fieldItem.imageTexts.GetByIndexOrDefault(i),
+                        audio = itemAudioContent,
+                    };
+                }).ToArray(),
                 videos = fieldItem.videos.Select((video, i) => ExportResource(
                         video,
                         folderPath,

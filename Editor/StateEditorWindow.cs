@@ -254,7 +254,7 @@ public class StateEditorWindow : EditorWindow
             groupConnectionEditor.Draw(state, Repaint);
         }
 
-        fieldItemsOpened = EditorGUILayout.Foldout(fieldItemsOpened, "Field items", true);
+        fieldItemsOpened = EditorGUILayout.Foldout(fieldItemsOpened, "Интерактивные элементы", true);
         if (fieldItemsOpened)
         {
             fieldItemEditor.Draw(state, Repaint);

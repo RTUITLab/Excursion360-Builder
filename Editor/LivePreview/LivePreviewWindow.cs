@@ -1,4 +1,4 @@
-﻿using Packages.Excursion360_Builder.Editor.Viewer;
+using Packages.Excursion360_Builder.Editor.Viewer;
 using Packages.Excursion360_Builder.Editor.WebBuild.RemoteItems;
 using Packages.tour_creator.Editor.WebBuild;
 using System;
@@ -47,8 +47,8 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                     EditorUtility.DisplayDialog("Error", "Can't create tour", "Ok");
                     return;
                 }
-                tour.firstStateId = state.GetExportedId();
-                tour.fastReturnToFirstStateEnabled = false; // Нет необходимости в возврате на время тестирования
+                tour.FirstStateId = state.GetExportedId();
+                tour.FastReturnToFirstStateEnabled = false; // Нет необходимости в возврате на время тестирования
                 BackgroundTaskInvoker.StartBackgroundTask(LivePreviewProcessHelper.OpenTour(tour, SceneView.lastActiveSceneView.rotation));
             }
             finally
