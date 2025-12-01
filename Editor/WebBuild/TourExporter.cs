@@ -395,11 +395,22 @@ internal class TourExporter
 
         foreach (var fieldItem in unityFieldConnections)
         {
-            var images = fieldItem.images.Select((texture, i) => ExportResource(
-                        texture,
-                        folderPath,
-                        $"{fieldItem.GetExportedId()}_{i}",
-                        resourceHandlePath))
+            var images = fieldItem.images.Select((texture, i) =>
+            {
+                var textureToExport = texture;
+                var pathToTexture = AssetDatabase.GetAssetPath(texture);
+                var targetPath = Path.Combine(Path.GetDirectoryName(pathToTexture), $"{Path.GetFileNameWithoutExtension(pathToTexture)}_deskew{Path.GetExtension(pathToTexture)}");
+                var deskewedTexture = AssetDatabase.LoadAssetAtPath<Texture>(targetPath);
+                if (deskewedTexture != null)
+                {
+                    textureToExport = deskewedTexture;
+                }
+                return ExportResource(
+                                        textureToExport,
+                                        folderPath,
+                                        $"{fieldItem.GetExportedId()}_{i}",
+                                        resourceHandlePath);
+            })
                         .ToArray();
             fieldItems.Add(new Exported.FieldItem
             {
@@ -416,7 +427,7 @@ internal class TourExporter
                             src = ExportResource(
                                 audio,
                                 folderPath,
-                                $"{fieldItem.GetExportedId()}_{i}",
+                                $"{fieldItem.GetExportedId()}_{audio.GetInstanceID()}",
                                 resourceHandlePath),
                             duration = audio.length,
                         };
@@ -498,7 +509,7 @@ internal class TourExporter
                 }
                 else
                 {
-                    File.Copy(path, destinationFilePath);
+                    File.Copy(path, destinationFilePath, true);
                 }
                 return sourceFileName;
             case ResourceHandlePath.PublishPath:
