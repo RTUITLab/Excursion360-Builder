@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using Exported = Packages.tour_creator.Editor.Protocol;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Packages.Excursion360_Builder.Editor.Protocol;
 namespace Packages.Excursion360_Builder.Editor.LivePreview
 {
     class LivePreviewProcessHelper
@@ -45,11 +48,19 @@ namespace Packages.Excursion360_Builder.Editor.LivePreview
                 "http://localhost:5000/api/interop/openTour", "POST"
                 ))
             {
-                byte[] bodyRaw = Encoding.UTF8.GetBytes(JsonUtility.ToJson(new TourWithCameraRotationForOpeningInLivePreview
-                {
-                    tour = tour,
-                    rotation = rotation,
-                }));
+                byte[] bodyRaw = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(
+                    new TourWithCameraRotationForOpeningInLivePreview
+                    {
+                        tour = tour,
+                        rotation = rotation,
+                    },
+                    settings: new JsonSerializerSettings
+                    {
+                        Formatting = Formatting.Indented,
+                        ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                        Converters = new List<JsonConverter> { QuaternionJsonConverter.Instance, ColorJsonConverter.Instance }
+                    }
+                    ));
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);
                 request.downloadHandler = new DownloadHandlerBuffer();
                 request.SetRequestHeader("Content-Type", "application/json");
