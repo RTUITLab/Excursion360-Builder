@@ -112,6 +112,26 @@ public class StateEditorWindow : EditorWindow
         GUILayout.Label("State title: ", EditorStyles.boldLabel);
         state.title = SpellCheckHintsContent.DrawTextField($"{state.GetInstanceID()}_{nameof(state.title)}", state.title, Repaint, newValue => { state.title = newValue; });
 
+        GUILayout.Label("Действия: ", EditorStyles.boldLabel);
+        GUILayout.BeginHorizontal();
+
+
+
+        if (GUILayout.Button("Фокус на сцену", GUILayout.Height(30)))
+        {
+            FocusCamera(state.gameObject);
+            SelectObject(state.gameObject);
+        }
+
+        if (GUILayout.Button("Открыть в превью", GUILayout.Height(30)))
+        {
+            var window = EditorWindow.GetWindow<LivePreviewWindow>("Live preview", focus: false);
+            window.OpenState(state);
+        }
+
+
+        GUILayout.EndHorizontal();
+
         EditorGUILayout.Space();
         _itemsScroll = EditorGUILayout.BeginScrollView(_itemsScroll);
 
@@ -143,26 +163,6 @@ public class StateEditorWindow : EditorWindow
 
 
         EditorGUILayout.Space();
-
-        GUILayout.Label("Actions: ", EditorStyles.boldLabel);
-        GUILayout.BeginHorizontal();
-
-
-
-        if (GUILayout.Button("Focus camera", GUILayout.Height(50)))
-        {
-            FocusCamera(state.gameObject);
-            SelectObject(state.gameObject);
-        }
-
-        if (GUILayout.Button("Open preview", GUILayout.Height(50)))
-        {
-            var window = EditorWindow.GetWindow<LivePreviewWindow>("Live preview", focus: false);
-            window.OpenState(state);
-        }
-
-
-        GUILayout.EndHorizontal();
 
 
 

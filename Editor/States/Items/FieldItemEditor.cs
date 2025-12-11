@@ -104,9 +104,9 @@ namespace Excursion360_Builder.Editor.States.Items
             GUILayout.Space(EditorGUI.indentLevel * 15);
             fieldItem.attachmentsTabIndex = GUILayout.Toolbar(fieldItem.attachmentsTabIndex, new string[] {
                 $"Изображения {fieldItem.images.Count}",
+                $"Аудио {fieldItem.audios.Count}",
                 "Видео",
                 "Текст",
-                $"Аудио {fieldItem.audios.Count}"
             });
             EditorGUILayout.EndHorizontal();
 
@@ -127,16 +127,16 @@ namespace Excursion360_Builder.Editor.States.Items
                 switch (fieldItem.attachmentsTabIndex)
                 {
                     case 1:
+                        var audiosProperty = serializedObject.FindProperty(nameof(fieldItem.audios));
+                        EditorGUILayout.PropertyField(audiosProperty, new GUIContent("ТОЛЬКО ПЕРВОЕ АУДИО БУДЕТ ИСПОЛЬЗОВАНО! (now)"));
+                        break;
+                    case 2:
                         var videosProperty = serializedObject.FindProperty(nameof(fieldItem.videos));
                         EditorGUILayout.PropertyField(videosProperty, new GUIContent("ТОЛЬКО ПЕРВОЕ ВИДЕО БУДЕТ ИСПОЛЬЗОВАНО (пока)"));
                         break;
-                    case 2:
+                    case 3:
                         var textProperty = serializedObject.FindProperty(nameof(fieldItem.text));
                         EditorGUILayout.PropertyField(textProperty, new GUIContent("Текст-описание всего интерактивного элемента"));
-                        break;
-                    case 3:
-                        var audiosProperty = serializedObject.FindProperty(nameof(fieldItem.audios));
-                        EditorGUILayout.PropertyField(audiosProperty, new GUIContent("ТОЛЬКО ПЕРВОЕ АУДИО БУДЕТ ИСПОЛЬЗОВАНО! (now)"));
                         break;
                     default:
                         break;
