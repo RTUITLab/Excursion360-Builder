@@ -70,18 +70,6 @@ public class StateEditorWindow : EditorWindow
                 EditorSceneManager.MarkSceneDirty(selection.gameObject.scene);
             }
         }
-
-        // Draw state creation button
-        GUILayout.FlexibleSpace();
-        if (GUILayout.Button("Create new state", GUILayout.Height(50)))
-        {
-            var newObject = PrefabUtility.InstantiatePrefab(TourEditor.StatePrefab.Value) as GameObject;
-            SelectObject(newObject);
-            Undo.RegisterCreatedObjectUndo(newObject, "Undo state creation");
-        }
-
-        EditorGUILayout.Space();
-
         // Force redraw all
         //Repaint();
         //SceneView.RepaintAll();
@@ -102,6 +90,12 @@ public class StateEditorWindow : EditorWindow
     {
         GUILayout.Label("Select one state for editing it", EditorStyles.boldLabel);
         GUILayout.Label("Select two states for editing connections", EditorStyles.boldLabel);
+        if (GUILayout.Button("Create new state", GUILayout.Height(50)))
+        {
+            var newObject = PrefabUtility.InstantiatePrefab(TourEditor.StatePrefab.Value) as GameObject;
+            SelectObject(newObject);
+            Undo.RegisterCreatedObjectUndo(newObject, "Undo state creation");
+        }
     }
 
     private void DrawStateEditPageGUI()
@@ -119,6 +113,7 @@ public class StateEditorWindow : EditorWindow
         state.title = SpellCheckHintsContent.DrawTextField($"{state.GetInstanceID()}_{nameof(state.title)}", state.title, Repaint, newValue => { state.title = newValue; });
 
         EditorGUILayout.Space();
+        _itemsScroll = EditorGUILayout.BeginScrollView(_itemsScroll);
 
         // Draw panorama texture edit field
         EditorGUILayout.BeginHorizontal();
@@ -187,7 +182,6 @@ public class StateEditorWindow : EditorWindow
 
         EditorGUILayout.Space();
 
-        _itemsScroll = EditorGUILayout.BeginScrollView(_itemsScroll);
         // Draw connections list
         connectionsFromOpened = EditorGUILayout.Foldout(connectionsFromOpened, "Connections from that:", true);
         if (connectionsFromOpened)
