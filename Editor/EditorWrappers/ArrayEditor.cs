@@ -45,6 +45,16 @@ namespace Packages.Excursion360_Builder.Editor.EditorWrappers
                     updated.Insert(iSrc + 1, default);
                     iUpd++; // Парные элементы теперь находятся впереди
                 }
+                // Сделано только перемещение вверх для простоты реализации + не найдена иконка для стрелки "вниз"
+                if (iSrc > 0)
+                {
+                    if (Buttons.Up())
+                    {
+                        updated = new List<T>(source);
+                        (updated[iUpd - 1], updated[iUpd]) = (updated[iUpd], updated[iUpd - 1]);
+                    }
+                }
+
                 EditorGUILayout.EndVertical();
 
                 EditorGUILayout.EndHorizontal();
